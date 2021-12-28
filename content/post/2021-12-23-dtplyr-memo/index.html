@@ -1,0 +1,47 @@
+---
+title: dtplyr memo
+author: ''
+date: '2021-12-23'
+slug: dtplyr-memo
+categories:
+  - R
+tags:
+  - memo
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<p><img src="images/logo.png" /></p>
+<blockquote>
+<p>data.table + dplyr = dtplyr</p>
+</blockquote>
+<p>We only need use <code>lazy_dt()</code> to transform our data in advance, then use dplyr expression as usual, and then get results by <code>as.data.table()</code> or <code>as.data.frame()</code> or <code>as_tibble()</code>.</p>
+<pre class="r"><code>library(data.table)
+library(dtplyr)
+library(dplyr, warn.conflicts = FALSE)
+
+mtcars2 &lt;- lazy_dt(mtcars)
+
+mtcars2 %&gt;% 
+  filter(wt &lt; 5) %&gt;% 
+  mutate(l100k = 235.21 / mpg) %&gt;% # liters / 100 km
+  group_by(cyl) %&gt;% 
+  summarise(l100k = mean(l100k)) %&gt;% 
+  as_tibble()</code></pre>
+<pre><code>## # A tibble: 3 x 2
+##     cyl l100k
+##   &lt;dbl&gt; &lt;dbl&gt;
+## 1     4  9.05
+## 2     6 12.0 
+## 3     8 14.9</code></pre>
+<p>Details please click below links:</p>
+<ul>
+<li><p><a href="https://www.tidyverse.org/blog/2019/11/dtplyr-1-0-0/">writer’s blog to introduce this R package</a></p></li>
+<li><p><a href="https://dtplyr.tidyverse.org/articles/translation.html">writer’s article about how dtplyr translates dplyr expressions into the data.table code</a></p></li>
+</ul>
+<p>dplyr also has other two backends:</p>
+<ul>
+<li><p><strong>dbplyr</strong> (translates your dplyr code to SQL), you could look at <a href="https://dbplyr.tidyverse.org/">here</a> and <a href="https://dbplyr.tidyverse.org/reference/tbl.src_dbi.html">here</a>.</p></li>
+<li><p><strong>sparklyr</strong> (for datasets stored in Spark), you could click <a href="https://spark.rstudio.com/">here</a>.</p></li>
+</ul>

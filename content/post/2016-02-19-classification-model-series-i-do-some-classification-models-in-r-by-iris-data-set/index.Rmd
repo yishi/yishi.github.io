@@ -1,0 +1,242 @@
+---
+title: 'Classification Model Series I : Do Some Classification Models In R By Iris
+  Data Set'
+author: ''
+date: '2016-02-19'
+slug: classification-model-series-i-do-some-classification-models-in-r-by-iris-data-set
+categories:
+  - R
+tags:
+  - classification
+---
+
+This famous (Fisher's or Anderson's) iris data set gives the measurements in
+centimeters of the variables sepal length and width and petal length and width,
+respectively, for 50 flowers from each of 3 species of iris. The species are Iris setosa, versicolor, and virginica.
+
+![](images/1.jpg)
+
+```{r}
+###################################################
+### use iris dataset to test classify models
+###################################################
+
+# load the data set
+data(iris)
+
+#########################
+# explore the data set
+#########################
+
+head(iris)
+str(iris)
+summary(iris)
+```
+
+Let us see some relationships between variables in the iris data set.
+
+```{r}
+#  visualizing relationships between variables
+library(ggplot2)
+ggplot(iris, aes(x = Sepal.Length, y = Sepal.Width, col = Species, shape = Species)) +
+  geom_point()
+
+ggplot(iris, aes(x = Sepal.Length, y = Petal.Length, col = Species, shape = Species)) +
+  geom_point()
+
+ggplot(iris, aes(x = Sepal.Length, y = Petal.Width, col = Species, shape = Species)) +
+  geom_point()
+
+ggplot(iris, aes(x = Sepal.Width, y = Petal.Length, col = Species, shape = Species)) +
+  geom_point()
+
+ggplot(iris, aes(x = Sepal.Width, y = Petal.Width, col = Species, shape = Species)) +
+  geom_point()
+
+ggplot(iris, aes(x = Petal.Width, y = Petal.Length, col = Species, shape = Species)) +
+  geom_point()
+```
+The species of setosa is easy identify by petal width or petal length, the other species are somewhat difficult to classify.
+
+Then we split iris data set to train-set and test-set.
+
+```{r}
+#########################################
+##  split the data set to train and test
+#########################################
+
+n <- length(iris[,1])
+index1 <- 1 : n
+# divide to 5 part of data
+index2 <- rep(1 : 5, ceiling(n / 5))[1 : n]
+set.seed(100)
+# melt the order of the data
+index2 <- sample(index2, n)
+# get the one part of the data
+m <- index1[index2 == 1]
+trainset <- iris[-m, ]
+testset <- iris[m, ]
+str(trainset)
+```
+Let us try to do some classification models.
+
+**Logistic regression** is mainly for 2 response classes, and for linear decision boundaries.Of course, we could also classify the species of setosa first, then use logic regression to classify the other species, but we did not try it in here.
+
+**Discriminant analysis** is popular for multiple-class classification.Here, we assume the decision boundary is linear, so we use linear discriminant analysis model.
+```{r}
+#####################################
+## try kinds of classify models
+#####################################
+
+## linear discriminant analysis
+library(MASS)
+lda_model <- lda(Species ~ ., data = trainset)
+lda_model
+plot(lda_model)
+lda_pred <- predict(lda_model, testset)
+```
+
+Let us see the confusion matrix and accurate from linear discriminant analysis model.
+```{r}
+table(lda_pred$class, testset$Species)
+mean(lda_pred$class == testset$Species)
+```
+
+**K-nearest neighbor** model is mainly for complicated decision boundary, and for few features.If there are much many features, this model will dive into the curse of dimension.
+
+In this model, the scale of the variables matters, because this classifier predicts the class of a given test observation by identifying distance, so to standardize the data is a good way.
+```{r}
+## k-nearest neighbor
+library(class)
+train_x <- as.matrix(trainset[, 1:4])
+test_x <- as.matrix(testset[, 1:4])
+train_y <- trainset[, 5]
+
+set.seed(1)
+knn_pred <- knn(train_x, test_x, train_y, k = 1)
+
+table(knn_pred, testset$Species)
+mean(knn_pred == testset$Species)
+```
+
+**Decision tree** is a classic model. It is simple and easy to explain to people.However, trees generally do not have high accuracy.
+```{r}
+## decision tree
+library(tree)
+tree_model <- tree(Species ~ ., trainset)
+summary(tree_model)
+```
+Decision tree can be displayed graphically.
+```{r}
+plot(tree_model)
+text(tree_model, pretty = 0)
+```
+The confusion matrix and accuracy from decision tree model.
+
+```{r}
+tree_pred <- predict(tree_model, testset, type = "class")
+
+table(tree_pred, testset$Species)
+mean(tree_pred == testset$Species)
+```
+By aggregating many decision trees, using models like **bagging**, **random forests**, and **boosting**, the accuracy of tree can be substantially improved.
+```{r}
+## bagging
+library(randomForest)
+bag_model <- randomForest(Species ~ ., data = trainset, mtry = 4,
+                          importance = TRUE)
+bag_model
+bag_pred <- predict(bag_model, newdata = testset)
+plot(bag_pred, testset$Species)
+
+table(bag_pred, testset$Species)
+mean(bag_pred == testset$Species)
+```
+The main difference between bagging and random forests is the choice of predictor subset size.
+```{r}
+##  random forestlibrary(randomForest)
+rf_model <- randomForest(Species ~ ., data = trainset, 
+                          importance = TRUE)
+rf_model
+```
+Random forest could also supply us the importance of variables.
+```{r}
+rf_pred <- predict(rf_model, newdata = testset)
+plot(rf_pred, testset$Species)
+importance(rf_model)
+varImpPlot(rf_model)
+
+table(rf_pred, testset$Species)
+mean(rf_pred == testset$Species)
+```
+
+In boosting, because the growth of a particular tree takes into account the other trees that have already been grown, smaller trees are typically sufficient.
+```{r}
+## boosting
+library(gbm)
+
+boost_model <- gbm(Species ~ ., data = trainset)
+summary(boost_model)
+boost_pred <- predict(boost_model, newdata = testset, n.trees = 100,
+                      type = "response")
+
+temp = data.frame(boost_pred[, , 1])
+temp2 = apply(temp, 1, which.max)
+boost_pred2 <- names(temp)[temp2]
+
+table(boost_pred2, testset$Species)
+mean(boost_pred2 == testset$Species)
+```
+**Support vector machine** model:
+```{r}
+##  support vector machine
+library(e1071)
+svm_model <- svm(Species ~ ., data = trainset,
+                 kernel = "linear", scale = FALSE)
+summary(svm_model)
+svm_pred <- predict(svm_model, testset)
+
+table(svm_pred, testset$Species)
+mean(svm_pred == testset$Species)
+```
+**Naive bayes** model: 
+```{r}
+## naive bayes
+library(e1071)
+bayes_model <- naiveBayes(trainset[, 1:4], trainset$Species)
+summary(bayes_model)
+bayes_pred <- predict(bayes_model, testset[, 1:4], type = "class")
+
+table(bayes_pred, testset$Species)
+mean(bayes_pred == testset$Species)
+```
+**Artificial neural networks** model:
+```{r}
+## artificial neural networks
+library(nnet)
+ann_model <- nnet(Species ~ ., data = trainset, size = 3)
+ann_pred <- predict(ann_model, newdata = testset, type = "class")
+
+table(ann_pred, testset$Species)
+mean(ann_pred == testset$Species)
+```
+
+There are three models achieved highest correct rate 0.9666667.
+
+They are **linear discriminant analysis**, **support vector machine** and **artificial neural net**.
+
+
+**Referenced books:**
+
+1. Machine Learning with R
+
+2. Applied Predictive Modeling
+
+3. An Introduction to Statistical Learning with Applications in R
+
+Just record, this article was posted at linkedin, and have 238 views to November 2021. 
+
+
+
+
+

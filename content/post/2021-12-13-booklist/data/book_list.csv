@@ -1,0 +1,255 @@
+time,book
+Jul-12,统计陷阱
+,R data mining
+,R introduction
+,R忍者秘籍
+,悟空传
+Aug-12,bussiness model and data mining
+,hujiangtang blog
+,我是一只IT小小鸟
+,数学之美
+,statisticals intuiation
+Sep-12,R in action
+,visualize this
+,ggplot2 elegant graphics for data analysis
+,liuweipeng blog
+,lixiaolai blog
+Oct-12,编程随想 blog
+,涂子沛 blog
+,中国社会各阶层-梁晓声
+Nov-12,the little book of mongodb
+,the art of R programming
+,quite a life
+,the road less travelled
+,R in a nutshell
+Dec-12,轻松学用linux编程
+Jan-13,Data Journalism
+,new concept English 1
+,Bad Data Handbook
+,new concept English 2
+,the R book
+Feb-13,正态分布的前世今生
+Mar-13,Data Mining with R
+,Priciples of data mining
+Apr-13,老子新解-苏子由
+,厚黑学
+,楞伽经
+,R programming for bioinformatics
+May-13,坛经
+,software for data analysis programming with R
+,维摩诘所说经
+,道德真经注-苏辙
+,四圣心源
+,黄帝内经
+Jun-13,仙学详述
+Jul-13,A Byte of Python
+,data analysis with open source tools
+,Mordern Applied Statistics with S (MASS)
+,A Handbook of Statistical Analysis Using R
+Aug-13,HSAUR
+,十个词汇里的中国-余华
+,中国通货膨胀史-张公权
+Sep-13,数理统计与初级教程
+,伤寒悬解
+,致中国人的演讲
+,左手孔子右手老子-林语堂
+Nov-13,美国也荒唐
+,R Graphics cookbook
+,金匮悬解
+,伤寒说意
+,素灵微蕴
+,素问悬解
+Jan-14,statistical learning with R
+,庄子喃华
+,new concept English 3
+,new concept English 4
+,薛富波：SAS8.2统计应用教程
+,SAS programming with example
+,人间世
+Feb-14,Applied Predictive Modeling
+,learning R
+,Concepts in computing with R
+Mar-14,Data Mining Applications with R
+,禅与生命认知
+,诫子书-诸葛亮
+,R inferno
+,Web application Development with R using Shiny
+,Data Manipulation with R
+Apr-14,Introductory Statistics with R
+,An Introduction to Statistical Learning with applications with R
+,历史上的智谋-南怀瑾
+,周易悬象-黄元御
+May-14,the elements of statisticals learning
+,中医入门-运气学导论
+,应用商务统计分析
+,Machine learning for hackers
+,列子臆传
+,原本大学微义
+Jun-14,失控
+,Data analysis and Graphics Using R
+Jul-14,The Python Tutorial
+,Scipy and Numpy
+,Python for data analysis
+Aug-14,learning Python
+,Big Data Analytics with R and Hadoop
+,数理统计初级教程
+Sep-14,Unix & Linux 大学教程
+Oct-14,The little SAS book
+,SAS certification guide (base)
+Nov-14,SAS advance
+Dec-14,一个学佛者的信念
+,Cody's popular SAS programming tasks and how
+,SAS programming in the pharmaceutical industry
+Jan-15,clinical trials A practical guide to design analysis and reporting
+,common statistical methods for clinical research with SAS examples
+Feb-15,learning SAS by example: A programmer's Guide
+,怎样立地成佛
+Mar-15,遇见未知的自己
+,手到病除
+,think Python - how to think like a computer scientist
+,Master Machine Learning with scikit-learning
+,魏晋南北朝史稿论述-陈寅恪
+May-15,大数据思维与决策
+,内观基础-马哈希尊者
+,观呼吸-平静的第一堂课
+,禅修入门-隆波帕默尊者
+Jun-15,英语思维是这样炼成的
+,学英语必看语法手册
+,心相因果与吉凶祸福
+,naked statistics
+Jul-15,地狱游记
+,统计与真理
+,麦肯锡工作法
+,Machine learning in action
+,python核心编程
+,慈心禅
+,scikit-learn cookbook
+Aug-15,美国语文课本1
+,优雅一生的装扮课
+,道家养生学概要
+,百年谎言
+Sep-15,复杂数据统计方法
+,统计学：从数据到结论
+Oct-15,民国英语课本第一册
+,人生幸福-叔本华
+,民国英语课本第二册
+Nov-15,民国英语课本第三册
+,跟着美国历史学英语
+,麦加菲读本2
+Dec-15,Building Machine Learning Systems with Python
+,王善人讲病
+,廖雪峰Python教程
+,美国语文课本2
+,美国语文课本3
+Jan-16,太上感应篇
+,美国语文课本4
+,learning spark
+,spark for python developers
+Feb-16,mastering pandas
+Mar-16,introduction to python for econometrics statistics and data analysis
+Apr-16,Advanced Analytics with Spark
+,Machine Learning with Spark
+,data science at the command line
+,思维的乐趣：Matrix67数学笔记
+May-16,Practical Data Science Cookbook
+,红楼梦脂评汇校本
+,我的第一本亲子英文书
+Jun-16,A student's Guide to Python for physical Modeling
+Jul-16,幸福的人生-叔本华
+,跨文化交际
+Aug-16,跟美国小孩学动词
+,feel the math by Python
+,Introduction to Computation and Programming Using Python
+,庄子
+Sep-16,deep learning cs229
+,几度东风吹世换
+,西游真解：仙人养成计划
+Oct-16,deep learning cs231n
+,deep learning cs224d
+,中国古代诗歌欣赏
+Nov-16,孙子兵法
+,keras
+,deep learning 4 nlp
+,learning opencv
+,树莓派 for kids
+Dec-16,learning opencv3 computer vision with python
+Feb-17,vocabulary in use
+Mar-17,Pattern Recognition and Machine Learning
+Apr-17,千字文
+,中庸
+,Computer Vision algorithms and applications
+,雅思口语全攻略
+,一天搞懂深度学习
+Aug-17,smart reading 1
+,smart reading 2
+Oct-17,smart reading 3
+,smart reading 4
+Jan-18,Alice's adventures in wonderland
+,A chrismas carol
+Feb-18,回归分析
+Mar-18,如何高效学习
+,回归分析与实验设计
+Apr-18,smart reading 5
+,思考，快与慢
+,中国书法历史
+Jul-18,人谱
+,高中英语语法大全
+Aug-18,夏洛的网
+,A wrinckle in time
+,南怀瑾讲静坐
+,factfulness
+Nov-18,Grokking Algorithms
+,少有人走的路
+,中国哲学简史
+Dec-18,Machine learning yearning
+,中国茶经
+,Math - better explained
+Jan-19,deep learning cs229
+Feb-19,blogdown
+Mar-19,给加西亚的信
+,定位
+Apr-19,R的极客理想：量化投资篇
+May-19,富爸爸，穷爸爸
+,Automatic Operation of Browser using Selenium and Python
+Jun-19,人类简史
+,china's stock market
+,写给学生的世界历史
+,Creating APIs in R with Plumber
+,金字塔原理
+Jul-19,how to speed up R code
+,parallel R
+,生命本来的样子
+,未来简史
+,今日简史
+,Quantitative trading
+Aug-19,麦肯锡思维
+,写给学生的世界艺术
+Nov-19,原则
+Dec-19,Quantitative trading by Ernest P.chan
+,枪炮、流行病、钢铁
+,Algorithmic trading
+Apr-20,量化投资策略：如何实现超额收益
+Jun-20,打开量化投资的黑箱
+,金融计量学：从初级到高级建模技术
+Jul-20,Machine learning for factor investing
+,走出幻觉走向成熟
+Sep-20,股市趋势技术分析
+Mar-21,乌合之众
+,股票大作手操盘术
+,每天听一点VOA
+Apr-21,海龟交易法则
+,股票大作手回忆录
+,通向财务自由之路
+May-21,趋势戒律：超额收益交易策略
+Jun-21,趋势跟踪：股市稳定盈利之道
+,亚当理论
+Jul-21,Pro-Git
+,鸟哥的linux私房菜：基础学习篇
+Aug-21,Reproducible Finance with R
+Sep-21,bookdown
+Oct-21,R markdown: The definitive guide
+Nov-21,中国国家治理的制度逻辑-周雪光
+,背叛
+,中国历代政治得失-钱穆
+,天幕红尘
+Dec-21,国史大纲-钱穆

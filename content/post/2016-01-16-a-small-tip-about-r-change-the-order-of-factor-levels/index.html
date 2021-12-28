@@ -1,0 +1,40 @@
+---
+title: A small tip about R --- Change the order of factor levels
+author: ''
+date: '2016-01-16'
+slug: a-small-tip-about-r-change-the-order-of-factor-levels
+categories:
+  - R
+tags:
+  - tips
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<p>When you plot a bar plot by ggplot2, you may be want to change the order of factor levels.</p>
+<p>For example:</p>
+<pre class="r"><code>library(ggplot2)
+
+temp &lt;- data.frame(x = factor(letters[1:4]), y = c(34, 23, 15, 46))
+
+ggplot(temp, aes(x = x, y = y)) + geom_bar(stat = &quot;identity&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<p>If you want to order the bar by decreasing, you need to change the order of factor levels by y.</p>
+<pre class="r"><code>temp$x</code></pre>
+<pre><code>## [1] a b c d
+## Levels: a b c d</code></pre>
+<pre class="r"><code>temp$x &lt;- reorder(temp$x, temp$y)
+
+temp$x</code></pre>
+<pre><code>## [1] a b c d
+## attr(,&quot;scores&quot;)
+##  a  b  c  d 
+## 34 23 15 46 
+## Levels: c b a d</code></pre>
+<pre class="r"><code>ggplot(temp, aes(x = x, y = y)) + geom_bar(stat = &quot;identity&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>or you also could also want to use other methods, for example:</p>
+<pre class="r"><code>temp$x &lt;- factor(temp$x, levels = as.character(temp$x[order(temp$y)]))</code></pre>
+<p>Welcome your advice and suggestion!</p>
+<p>Just record, this article was posted at linkedin, and have 74 views to November 2021.</p>

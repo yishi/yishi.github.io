@@ -1,0 +1,41 @@
+---
+title: A small tip about R --- Subset one column from a dataframe
+author: ''
+date: '2016-01-16'
+categories:
+  - R
+tags:
+  - tips
+slug: a-small-tip-about-r-subset-one-collumn-from-a-dataframe
+---
+
+For example:
+
+```{r}
+temp <- data.frame(x = c(1, 2, 4), y = c(34, 23, 45))
+```
+
+method 1. **temp[1]**  get a **data frame**
+
+method 2. **temp[, 1]**  get a **vector**
+
+Below is R code and output.
+
+```{r}
+temp
+
+str(temp)
+
+temp[1]
+
+str(temp[1])
+
+temp[, 1]
+
+str(temp[, 1])
+
+```
+
+Welcome your advice and suggestion!
+
+Just record, this article was posted at linkedin, and have 9 views to November 2021.

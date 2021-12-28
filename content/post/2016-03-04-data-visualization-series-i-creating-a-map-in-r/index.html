@@ -1,0 +1,93 @@
+---
+title: 'Data Visualization Series I: Creating a Map in R'
+author: ''
+date: '2016-03-04'
+slug: data-visualization-series-i-creating-a-map-in-r
+categories:
+  - R
+tags:
+  - visualization
+  - map
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<p>There are many visualization methods, such as scatter plot, line, area, dimension, box, etc.</p>
+<p>Today, we look at how to make a geographical map and colored the regions according to variable values, and then make an animation.</p>
+<ul>
+<li>First, we can use a package <strong>maps</strong> to make a map.</li>
+</ul>
+<pre class="r"><code>library(maps)
+
+map(&quot;world&quot;, fill = TRUE, col = rainbow(200),
+    ylim = c(-60, 90), mar = c(0, 0, 0, 0))
+title(&quot;World Map&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<pre class="r"><code>map(&quot;state&quot;, fill = TRUE, col = rainbow(209),
+    mar = c(0, 0, 2, 0))
+title(&quot;USA Map&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-1-2.png" width="672" /></p>
+<ul>
+<li>Second, we can use a package <strong>ggplot2</strong>.</li>
+</ul>
+<p>This package is created by Hadley Wickham, a famous data scientist in RStudio.</p>
+<p>It could get map data from package maps, then draw the map by itself.</p>
+<pre class="r"><code>library(ggplot2)
+
+# create a data frame of map data
+states_map &lt;- map_data(&quot;state&quot;)
+# get map
+ggplot(states_map, aes(x = long, y = lat, group = group)) +
+  geom_polygon(fill = &quot;white&quot;, colour = &quot;black&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<pre class="r"><code>ggplot(states_map, aes(x = long, y = lat, group = group, fill = region)) +
+  geom_polygon(colour = &quot;white&quot;) +
+  guides(fill = &quot;none&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-2-2.png" width="672" /></p>
+<pre class="r"><code>east_asia &lt;- map_data(&quot;world&quot;, region = c(&quot;Japan&quot;, &quot;China&quot;, &quot;North Korea&quot;, &quot;South Korea&quot;))
+ggplot(east_asia, aes(x = long, y = lat, group = group, fill = region)) +
+  geom_polygon(colour = &quot;black&quot;) +
+  scale_fill_brewer(palette = &quot;Set2&quot;)  </code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-2-3.png" width="672" /></p>
+<ul>
+<li>Third, we continue to create a choropleth map, with regions that are colored according to variable values.</li>
+</ul>
+<p>We try to use some crimes data to color the regions in the map.</p>
+<p>The crimes data comes from the USArrests dataset included in R.</p>
+<p>This data set contains statistics, in arrests per 100,000 residents for assault, murder, and rape in each of the 50 US states in 1973.</p>
+<pre class="r"><code>crimes &lt;- data.frame(state = tolower(rownames(USArrests)), USArrests)
+head(crimes)</code></pre>
+<pre><code>##                 state Murder Assault UrbanPop Rape
+## Alabama       alabama   13.2     236       58 21.2
+## Alaska         alaska   10.0     263       48 44.5
+## Arizona       arizona    8.1     294       80 31.0
+## Arkansas     arkansas    8.8     190       50 19.5
+## California california    9.0     276       91 40.6
+## Colorado     colorado    7.9     204       78 38.7</code></pre>
+<pre class="r"><code>ggplot(crimes, aes(map_id = state, fill = Assault)) +
+  geom_map(map = states_map, colour = &quot;black&quot;) +
+  scale_fill_gradient2(low = &quot;#559999&quot;, mid = &quot;grey90&quot;, high = &quot;#BB650B&quot;,
+                       midpoint = median(crimes$Assault)) +
+  expand_limits(x = states_map$long, y = states_map$lat) +
+  coord_map(&quot;polyconic&quot;)  </code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<ul>
+<li>Last, I want to make an animation to display many maps about assault during different period.</li>
+</ul>
+<p>But, I do not have assault data of 50 states for many years.</p>
+<p>Because I only want to display the effects of animation maps, so I simply sample the assault data to color the regions.</p>
+<p>However, when I write this post, I found this animation, is a gif format graph, can not change, only still.</p>
+<p>Notes: This blog is renewed on 2021-11-9, here I use <strong>gifski</strong> package to display this animation and it can change, great!</p>
+<pre class="r"><code>for (i in 1:10) {
+   
+    print(ggplot(crimes, aes(map_id = state, fill = sample(Assault))) +
+            geom_map(map = states_map, colour = &quot;black&quot;) +
+            scale_fill_gradient2(low = &quot;#559999&quot;, mid = &quot;grey90&quot;, high = &quot;#BB650B&quot;,
+                                 midpoint = median(crimes$Assault)) +
+            expand_limits(x = states_map$long, y = states_map$lat) +
+            coord_map(&quot;polyconic&quot;))
+   
+  }</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-4-.gif" width="672" /></p>
+<p>Just record, this article was posted at linkedin, and have 342 views to November 2021.</p>

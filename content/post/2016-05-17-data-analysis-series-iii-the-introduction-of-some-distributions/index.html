@@ -1,0 +1,198 @@
+---
+title: 'Data Analysis Series III: The Introduction of some Distributions'
+author: ''
+date: '2016-05-17'
+slug: data-analysis-series-iii-the-introduction-of-some-distributions
+categories:
+  - R
+tags:
+  - data analysis
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<p><strong>The Binomial Distribution</strong></p>
+<p>The probability of observing k Successes in N trials with Success probability p is known as the Binomial distribution.</p>
+<pre class="r"><code># The binomial distribution
+library(ggplot2)
+library(reshape2)
+
+binom_df &lt;- data.frame(k = seq(0, 21),
+                       trials_10 = dbinom(seq(0, 21), size = 10, prob = 1/6),
+                       trials_30 = dbinom(seq(0, 21), size = 30, prob = 1/6),
+                       trials_60 = dbinom(seq(0, 21), size = 60, prob = 1/6),
+                       trials_90 = dbinom(seq(0, 21), size = 90, prob = 1/6))
+
+binom_df2 &lt;- melt(binom_df, id.vars = &quot;k&quot;)
+
+ggplot(binom_df2, aes(x = k, y = value, color = variable, shape = variable)) +
+  geom_line() +
+  geom_point(size = 1.8) +
+  xlab(&quot;Number of Successes&quot;) +
+  ylab(&quot;Probability&quot;) +
+  ggtitle(&quot;The Binomial distribution: success probability is 1/6&quot;) +
+  theme(plot.title = element_text(hjust = 0.5, size = rel(1.5), face = &quot;bold&quot;))</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-1-1.png" width="672" />
+<strong>The Gaussian Distribution and the Central Limit Theorem</strong></p>
+<p>The central limit theorem states that the sums of a bunch of random quantities will be distributed according to a Gaussian distribution.</p>
+<p>In the upper-left corner of the graph we have thrown the die only once and thus form the “average” over only a single throw.</p>
+<p>You can see that all of the possible values are about equally likely: the distribution is uniform.</p>
+<p>In the upper-right corner, we throw the dice twice every time and form the average over both throws.</p>
+<p>Already a central tendency in the distribution of the average of values can be observed!</p>
+<p>We then continue to make longer and longer averaging runs.</p>
+<pre class="r"><code>throw_1 &lt;- runif(n = 1000, min = 1, max = 6)
+
+throw_n &lt;- function(n) {
+  throw &lt;- c()
+  for (i in 1 : 1000) {
+    throw &lt;- c(throw, mean(runif(n = n, min = 1, max = 6)))
+    i &lt;- i + 1
+  }
+  throw
+}
+
+throw_2 &lt;- throw_n(n = 2)
+throw_3 &lt;- throw_n(n = 3)
+throw_5 &lt;- throw_n(n = 5)
+throw_10 &lt;- throw_n(n = 10)
+throw_50 &lt;- throw_n(n = 50)
+
+throw_df &lt;- data.frame(throw_1 = throw_1, throw_2 = throw_2,
+                       throw_3 = throw_3, throw_5 = throw_5,
+                       throw_10 = throw_10, throw_50 = throw_50)
+
+throw_df_m &lt;- melt(throw_df)
+
+ggplot(throw_df_m, aes(x = value, y = ..density..)) +
+  geom_histogram(fill = &quot;white&quot;, colour = &quot;black&quot;) +
+  geom_line(stat = &quot;density&quot;, colour = &quot;red&quot;) +
+  facet_wrap( ~ variable, ncol = 2, scales = &quot;free_y&quot;) +
+  ggtitle(&quot;The central limit theorem in action in R&quot;) +
+  theme(plot.title = element_text(hjust = 0.5, size = rel(1.5), face = &quot;bold&quot;))</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-2-1.png" width="672" />
+The strength and the limitation of the Gaussian model:</p>
+<ul>
+<li>If the Gaussian model applies, then we known that all variation in the data will be relatively small and therefore “benign”.</li>
+<li>At the same time, we known that for some systems, large outliers do occur in practice. This means that, for such system, the Gaussian model and theories based on it will not apply，such as “pathological” distribution which follow power-law behavior , resulting in bad guidance or outright wrong results.</li>
+</ul>
+<p>The properties of power-law distributions:</p>
+<ul>
+<li>Observations span a wide range of values, often many orders of magnitude;</li>
+<li>There is no typical scale or value that could be used to summarize the distribution of points;</li>
+<li>The distribution is extremely skewed, with many data points at the low end and few (but not negligibly few) data points at very high values;</li>
+<li>Expectation values often depend on the sample size.</li>
+</ul>
+<p>Power-law distribution have been observed in a number of different areas: the frequency with which words are used in texts, the magnitude of earthquakes, the size of files, the copies of books sold, the intensity of wars, the sizes of sand particles and solar flares, the population of cities, and the distribution of wealth.</p>
+<p>Power-law distributions have no parameters that could estimated - except for the exponent, which we know how to obtain from a double logarithmic plot.</p>
+<p>There are some other distributions that describe common scenarios we should be aware of.</p>
+<p><strong>Geometric Distribution</strong></p>
+<p>It is a special case of the binomial distribution.</p>
+<p>It can be viewed as the probability of obtaining the first Success at the kth trial (i.e., after observing k - 1 failures).</p>
+<p>It has mean = 1/prob and standard deviation = sqr(1-prob)/prob.</p>
+<pre class="r"><code>geom_df &lt;- data.frame(k = seq(1, 10),
+                       prob_0.2 = dgeom(seq(1, 10), prob = 0.2),
+                       prob_0.5 = dgeom(seq(1, 10), prob = 0.5),
+                       prob_0.8 = dgeom(seq(1, 10), prob = 0.8))
+
+geom_df2 &lt;- melt(geom_df, id.vars = &quot;k&quot;)
+
+ggplot(geom_df2, aes(x = factor(k), y = value, group = variable, color = variable, shape = variable)) +
+  geom_line() +
+  geom_point(size = 1.8) +
+  xlab(&quot;&quot;) +
+  ylab(&quot;&quot;) +
+  ggtitle(&quot;The geometric distribution in R&quot;) +
+  theme(plot.title = element_text(hjust = 0.5, size =rel(1.5), face = &#39;bold&#39;))</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-3-1.png" width="672" />
+<strong>Poisson Distribution</strong></p>
+<p>It describes the probability of finding k events during some continuous observation interval of known length.</p>
+<p>It is appropriate for processes in which discrete events occur independently and at a constant rate: calls to a call center, misprints in a manuscript, traffic accidents, and so on.</p>
+<pre class="r"><code>poisson_df &lt;- data.frame(k = seq(0, 20),
+                      lambda_1 = dpois(seq(0, 20), lambda = 1),
+                      lambda_3 = dpois(seq(0, 20), lambda = 3),
+                      lambda_10 = dpois(seq(0, 20), lambda = 10))
+
+poisson_df2 &lt;- melt(poisson_df, id.vars = &quot;k&quot;)
+
+ggplot(poisson_df2, aes(x = factor(k), y = value, group = variable, color = variable, shape = variable)) +
+  geom_line() +
+  geom_point(size = 1.8) +
+  xlab(&quot;&quot;) +
+  ylab(&quot;&quot;) +
+  ggtitle(&quot;The poisson distribution in R&quot;) +
+  theme(plot.title = element_text(hjust = 0.5, size =rel(1.5), face = &#39;bold&#39;))</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-4-1.png" width="672" />
+<strong>Log-Normal Distribution</strong></p>
+<p>Some quantities are inherently asymmetrical.</p>
+<p>Consider, for example, the time it takes people to complete a certain task: because everyone is different, we expect a distribution of values.</p>
+<p>However, all values are necessarily positive.</p>
+<p>Moreover, we can expect a particular shape of the distribution: there will be some minimum time that nobody can beat, then a small group of very fast champions, a peak at the most typical completion time, and finally a long tail of stragglers.</p>
+<p>Clearly, such a distribution will not be well described by a Gaussian, which is defined for both positive and negative values of x, is symmetric, and has short tails.</p>
+<p>The log-normal distribution is related to the Gaussian: a quantity follows the log-normal distribution if its logarithm is distributed according to a Gaussian.</p>
+<pre class="r"><code>log_norm_df &lt;- data.frame(k = seq(0, 5, by = .1),
+                         sdlog_2 = dlnorm(seq(0, 5, by = .1), meanlog = 1, sdlog = 2),
+                         sdlog_1 = dlnorm(seq(0, 5, by = .1), meanlog = 1, sdlog = 1),
+                         sdlog_0.5 = dlnorm(seq(0, 5, by = .1), meanlog = 1, sdlog = 1/2),
+                         sdlog_0.25 = dlnorm(seq(0, 5, by = .1), meanlog = 1, sdlog = 1/4))
+
+log_norm_df2 &lt;- melt(log_norm_df, id.vars = &quot;k&quot;)
+
+ggplot(log_norm_df2, aes(x = k, y = value, group = variable, color = variable, shape = variable)) +
+  geom_line() +
+  geom_point(size = 1.8) +
+  xlab(&quot;&quot;) +
+  ylab(&quot;&quot;) +
+  ggtitle(&quot;The log-normal distribution in R&quot;) +
+  theme(plot.title = element_text(hjust = 0.5, size =rel(1.5), face = &#39;bold&#39;))</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-5-1.png" width="672" />
+<strong>Sampling Distribution</strong></p>
+<p>These distributions are not used to describe events in the real world, they describe how the outcomes of specific typical calculations involving random quantities will be distributed.</p>
+<p>Gaussian distribution:</p>
+<ul>
+<li>It describes the distribution of averages.</li>
+</ul>
+<p>Student t distribution:</p>
+<ul>
+<li>This is the correct formula to use for the distribution of the average if the variance is not known but has to be determined from the sample together with the average.</li>
+<li>The distinction between the t distribution and the Gaussian matters only for small samples - that is, samples containing less than approximately 30 data points.</li>
+</ul>
+<pre class="r"><code>norm_df &lt;- data.frame(k = seq(-3, 3, by = .1),
+                      norm = dnorm(seq(-3, 3, by = .1)),
+                      t = dt(seq(-3, 3, by = .1), df = 3))
+
+norm_df_m &lt;- melt(norm_df, id.vars = &quot;k&quot;)
+
+ggplot(norm_df_m, aes(x = k, y = value, colour = variable)) +
+  geom_line() +
+  ggtitle(&quot;The Gaussian distribution and the t distribution&quot;) +
+  theme(plot.title = element_text(hjust = 0.5, size =rel(1.5), face = &#39;bold&#39;))</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>Chi-square distribution:</p>
+<ul>
+<li>It describes the distribution of the sum of squares of independent, identically distributed Gaussian random variables.</li>
+<li>It also could describe the distribution of variances.</li>
+</ul>
+<p>Fisher’s F distribution:</p>
+<ul>
+<li>It describes the behavior of the ratio of two chi-square random variables.</li>
+<li>We care about this when we want to compare two variance against each other (e.g., to test whether they are equal or not).</li>
+</ul>
+<pre class="r"><code>chi_df &lt;- data.frame(k = seq(1, 20, by = .1),
+                     chi = dchisq(seq(1, 20, by = .1), df = 3),
+                     f = df(seq(1, 20, by = .1), df1 = 3, df2 = 3))
+
+chi_df_m &lt;- melt(chi_df, id.vars = &quot;k&quot;)
+
+ggplot(chi_df_m, aes(x = k, y = value, colour = variable)) +
+  geom_line() +
+  ggtitle(&quot;The chi-square distribution and the F distribution&quot;) +
+  theme(plot.title = element_text(hjust = 0.5, size =rel(1.5), face = &#39;bold&#39;))</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-7-1.png" width="672" />
+<strong>Referenced:</strong></p>
+<ul>
+<li><p>Data Analysis with Open Source Tools</p></li>
+<li><p>R Graphics Cookbook</p></li>
+</ul>
+<p>Welcome your advice and suggestion!</p>
+<p>Just record, this article was posted at linkedin, and have 51 views to November 2021.</p>

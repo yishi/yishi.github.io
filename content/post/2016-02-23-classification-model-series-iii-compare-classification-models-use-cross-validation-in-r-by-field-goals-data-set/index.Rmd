@@ -1,0 +1,195 @@
+---
+title: 'Classification Model Series III : Compare Classification Models Use Cross-Validation
+  In R By Field Goals Data Set'
+author: ''
+date: '2016-02-23'
+slug: classification-model-series-iii-compare-classification-models-use-cross-validation-in-r-by-field-goals-data-set
+categories:
+  - R
+tags:
+  - classification
+---
+
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+In before articles about classification model, I often only split the data set, then compare their performance, but if you split the data set again, the components of train set will differ, the test set will differ, at the same time, the performance of the classifier will change.
+
+So, we should repeat split the train set and test set, compute the performance, then summary repeated measures, such as the mean of measure, the standard deviation of measures.
+
+In the same way, in before articles about classification model, I often chose kinds of models which are designed by some default parameters, then compare their performance, and find out some classifier which suit data set better.
+
+Suppose we have chosen some better models by simple split the data set and using some default models, how to compare these classifier in the depth of deeper?
+
+Ok, we want to talk about this question in this article.
+
++ Firstly, we need to tune parameters in my model, not to use only default parameters, because maybe other parameters will lead to better prediction values.
+
++ Secondly, we tune parameters by using train set and test set. 
+
+However,  different train-set or test-set will have different performance.
+
+So, we must split our raw train set many times, each time we compute a measures, in the end, we could have series measures. 
+
+Ordinary, we choose 10-fold cross validation method to split  data set and tune parameters.
+
++ Lastly, we compare models in performance.
+
+Here, I recommence to use **caret** package.
+
+The Classification and Regression Training (caret) package by Max Kuhn includes functions to streamline the model training process.
+
+This package also provides a large number of  tools for preparing, training, evaluating, and visualizing machine learning models and data.
+
+**We still use field goals data set as an example.**
+
+In before articles (classification model series II), we get the better models are **logistic regression, artificial neural networks, boosting**, so we use repeated cross-validation to tune parameters and compare their performance.
+
++ Firstly, let we look at the logistic regression model.
+
+We get a series of measures by cross-validation, such as the mean of sensitivity  is 0.06, the standard deviation of sensitivity is 0.06, ROC is auc (area under the ROC curve).
+
+We could still tune the cut-off value to get better auc and tpr values.
+
+```{r}
+# load the data set
+library(nutshell)
+data(field.goals)
+
+# create a new binary variable for dataset
+data <- transform(field.goals,
+                  play.type = as.factor(ifelse(play.type == "FG good", "good", "bad")))
+# head(data)
+# summary(data)
+
+###############################
+###  split the dataset
+###############################
+
+library(caret)
+set.seed(1234)
+train_index <- createDataPartition(data$play.type, p = .8, list = FALSE)
+trainset <- data[train_index, ]
+testset <- data[-train_index, ]
+
+###############################
+###  compare models
+###############################
+ctrl <- trainControl(method = "repeatedcv", repeats = 5,
+                     summaryFunction = twoClassSummary,
+                     classProbs = TRUE,
+                     savePredictions = TRUE)
+###  tune logistic regression
+logistic_model <- train(play.type ~ yards, data = trainset,
+                        method = "glm", family = binomial,
+                        metric = "Sens",
+                        trControl = ctrl)
+logistic_model
+logistic_pred <- predict(logistic_model, testset, type = "prob")
+
+fpr_tpr <- function(p, dataset) {
+  
+  TPR <- rep(0, length(p))
+  FPR <- rep(0, length(p))
+  for(i in 1 : length(p)){
+    p0 <- p[order(p)[i]]
+    label_true <- ifelse(dataset$play.type == "good", 1, 0)
+    label_pred <- 1 * (p > p0)
+    TPR[i] <- sum(label_pred * label_true) / sum(label_true)
+    FPR[i] <- sum(label_pred * (1 - label_true)) / sum(1 - label_true)
+  }
+  list(fpr = FPR, tpr = TPR)
+}
+
+# plot logistic regression roc
+logic_measures <- fpr_tpr(p = logistic_pred$good, dataset = testset)
+
+plot(logic_measures$fpr, logic_measures$tpr, type = "l", col = 2,
+     ylab = "TPR", xlab = "FPR")
+title("ROC curve")
+points(c(0, 1), c(0, 1), type = "l", lty = 2)
+```
+
+Then, we could see the artificial neural network model.
+
+Here, the function will be tune parameters "size" and "decay", and automatically chose the optimal model by the largest auc value.
+
+The performance nearly the same as logistic regression model after tune cut-off values.
+
+```{r}
+###  tune ann
+ann_model <- train(play.type ~ yards, data = trainset,
+                   method = "nnet",
+                   trControl = ctrl)
+ann_model
+ann_pred <- predict(ann_model, testset, type = "prob")
+
+ann_measures <- fpr_tpr(p = ann_pred$good, dataset = testset)
+plot(ann_measures$fpr, ann_measures$tpr, type = "l", col = 2,
+     ylab = "TPR", xlab = "FPR")
+title("ROC curve")
+points(c(0, 1), c(0, 1), type = "l", lty = 2)
+```
+In the end, we look at the boost model.
+
+It also tune parameters "interaction.depth" and "n.trees", then chose the optimal models by the largest auc value.
+
+After tune the cut-off point, the performance of the boost model is slight better.
+
+```{r}
+### tune boosting
+boost_model <- train(play.type ~ yards, data = trainset,
+                     method = "gbm",
+                     trControl = ctrl)
+boost_model
+boost_pred <- predict(boost_model, testset, type = "prob")
+
+boost_measures <- fpr_tpr(p = boost_pred$good, dataset = testset)
+plot(boost_measures$fpr, boost_measures$tpr, type = "l", col = 2,
+     ylab = "TPR", xlab = "FPR")
+title("ROC curve")
+points(c(0, 1), c(0, 1), type = "l", lty = 2)
+```
+Here, we also could use some numbers and some visualizations in the caret package to compare three models.
+
+```{r}
+resamp <- resamples(list(logistic = logistic_model, ann = ann_model, boost = boost_model))
+summary(resamp)
+summary(diff(resamp))
+
+# plot the difference between models
+dotplot(resamp)
+bwplot(resamp)
+densityplot(resamp, auto.key = list(columns = 2))
+```
+**Referenced:**
+  
+1. Applied Predictive Modeling
+
+2. http://topepo.github.io/caret/index.html
+
+Just record, this article was posted at linkedin, and have 226 views to November 2021.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,240 @@
+---
+title: 'Data Analysis Series II: Looking at Data --- Two and more Variables'
+author: ''
+date: '2016-05-14'
+slug: data-analysis-series-ii-looking-at-data-two-and-more-variables
+categories:
+  - python
+  - R
+tags:
+  - data analysis
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<p>The above article, which is about a single variable, display some graphs about the distribution.</p>
+<p>In one word, if you have a single variable, you want to explore it, you could look at the dot plot, histogram or kernel density estimate curve.</p>
+<p>Please note:</p>
+<ul>
+<li><p>First, if the distribution have a single, central peak, then you could use some summary statistics.</p></li>
+<li><p>Second, if your distribution, which have a single, central peak, is not symmetric or has important outliers, then you should favor median and percentile over mean and standard deviation.</p></li>
+<li><p>Third, you could use box plot to emphasizes the overall structure of the data sets and make it easy to compare the data sets based on their location and width, but the box plot would loses much information.</p></li>
+</ul>
+<p>So, recommend you to use violin plot, which combines a box plot with the kernel density estimation that gives a more detailed view of the data.</p>
+<p><strong>Two Variables : Establishing Relationships</strong></p>
+<p>Let’s look at some examples.</p>
+<p><strong>Scatter Plots and Smooth lines</strong></p>
+<p>Smoothing lines use linear regression line and loess (locally weighted polynomial)</p>
+<pre class="r"><code>### the relationship between two variables  
+# smoothing lines use linear regression line and loess (locally weighted polynomial)
+library(gcookbook)
+library(ggplot2)
+
+ggplot(heightweight, aes(x = ageYear, y = heightIn)) +
+  geom_point(colour = &#39;grey60&#39;) +
+  stat_smooth(method = lm, se = FALSE, colour = &quot;blue&quot;) +
+  stat_smooth(method = loess, se = FALSE, colour = &#39;red&#39;) +
+  ggtitle(&#39;Relationship between two variables in R by ggplot2&#39;) + 
+  theme(plot.title = element_text(hjust = 0.5, size = rel(1.5), face = &quot;bold&quot;))</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<pre class="python"><code>### the relationship between two variables  
+# smoothing lines use linear regression line
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import os
+
+tips = pd.read_csv(&#39;E:\\git\\my_blog\\seaborn-data\\tips.csv&#39;)
+
+plt.close(&#39;all&#39;)
+ax = sns.regplot(x = &quot;total_bill&quot;, y = &quot;tip&quot;, data = tips, fit_reg = True, ci = None, lowess = False)
+sns.regplot(x = &quot;total_bill&quot;, y = &quot;tip&quot;, data = tips, fit_reg = True, ci = None, lowess = True, ax = ax)
+plt.title(&#39;Relationship between two variables in Python by seaborn&#39;)
+plt.show()</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<pre class="r"><code># smoothing lines use logistic regression line
+library(MASS)
+
+b &lt;- biopsy
+b$classn[b$class == &quot;benign&quot;] &lt;- 0
+b$classn[b$class == &quot;malignant&quot;] &lt;- 1
+ggplot(b, aes(x = V1, y = classn)) +
+  geom_point(position = position_jitter(width = 0.3, height = 0.06),
+             alpha = 0.4, shape = 21, size = 1.5) +
+  stat_smooth(method = glm, method.args = list(family = &quot;binomial&quot;)) +
+  ggtitle(&#39;Relationship between two variables in R by ggplot2&#39;) +
+  theme(plot.title = element_text(hjust = 0.5, size = rel(1.5), face = &quot;bold&quot;))</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-3-3.png" width="672" /></p>
+<pre class="python"><code># smoothing lines use logistic regression line
+tips[&quot;big_tip&quot;] = (tips.tip / tips.total_bill) &gt; .15
+
+plt.close(&#39;all&#39;)
+sns.lmplot(x = &quot;total_bill&quot;, y = &quot;big_tip&quot;, data = tips, logistic = True, y_jitter = .03)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-4-1.png" width="245" /></p>
+<p><strong>Logarithmic Plots</strong></p>
+<p>They turn multiplicative variations into additive ones.</p>
+<p>They reveal exponential and power law behavior.</p>
+<p>In a logarithmic plot, we graph the logarithm of the data instead of the raw data.</p>
+<pre class="r"><code># logarithmic plots
+
+ggplot(Animals, aes(x = body, y = brain, label = rownames(Animals))) +
+  geom_text(size = 3) +
+  ggtitle(&#39;No logarithmic plot in R by ggplot2&#39;) +
+  theme(plot.title = element_text(hjust = 0.5, size = rel(1.5), face = &quot;bold&quot;))</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-5-3.png" width="672" /></p>
+<pre class="r"><code>ggplot(Animals, aes(x = body, y = brain, label = rownames(Animals))) +
+  geom_text(size = 3) +
+  scale_x_log10() + scale_y_log10() +
+  ggtitle(&#39;Logarithmic plot in R by ggplot2&#39;) +
+  theme(plot.title = element_text(hjust = 0.5, size = rel(1.5), face = &quot;bold&quot;))</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-5-4.png" width="672" /></p>
+<p>It’s possible to use a log axis for just one axis.</p>
+<p>It is often useful to represent financial data this way, because it better represents proportional changes.</p>
+<pre class="r"><code>ggplot(aapl, aes(x = date, y = adj_price)) +
+  geom_line() +
+  ggtitle(&#39;No logarithmic plot in R by ggplot2&#39;) +
+  theme(plot.title = element_text(hjust = 0.5, size = rel(1.5), face = &quot;bold&quot;))</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<pre class="r"><code>ggplot(aapl, aes(x = date, y = adj_price)) +
+  geom_line() +
+  scale_y_log10(breaks = c(2, 10, 50, 250)) +
+  ggtitle(&#39;Logarithmic plot in R by ggplot2&#39;) +
+  theme(plot.title = element_text(hjust = 0.5, size = rel(1.5), face = &quot;bold&quot;))</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-6-2.png" width="672" /></p>
+<p>Smoothing methods and logarithmic plots are both tools that help us recognize structure in a data set.</p>
+<p>Smoothing methods reduce noise, and logarithmic plots help with data sets spanning many orders of magnitude.</p>
+<p><strong>Banking</strong></p>
+<p>It does not work on the data but on the plot as a whole by changing its aspect ratio.</p>
+<pre class="r"><code>ggplot(marathon, aes(x = Half, y = Full)) +
+  geom_point() +
+  coord_fixed() +
+  scale_y_continuous(breaks = seq(0, 420, 30)) +
+  scale_x_continuous(breaks = seq(0, 420, 30)) +
+  ggtitle(&#39;Different banking in R by ggplot2&#39;) +
+  theme(plot.title = element_text(hjust = 0.5, size = rel(1.5), face = &quot;bold&quot;))</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<pre class="r"><code>ggplot(marathon, aes(x = Half, y = Full)) +
+  geom_point() +
+  coord_fixed(ratio = 1/2) +
+  scale_y_continuous(breaks = seq(0, 420, 30)) +
+  scale_x_continuous(breaks = seq(0, 420, 15)) +
+  ggtitle(&#39;Different banking in R by ggplot2&#39;) +
+  theme(plot.title = element_text(hjust = 0.5, size = rel(1.5), face = &quot;bold&quot;))</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-7-2.png" width="672" /></p>
+<p>In the book of data analysis with open source tools, the writer gives us some suggestions about how to make a graph.</p>
+<p>Let’s see a three-step (maybe four-step) process what the writer said.</p>
+<ul>
+<li><p>First: The basics.</p>
+<ul>
+<li><p>Select proper ranges;</p></li>
+<li><p>Subtract a constant offset;</p></li>
+<li><p>Decide whether to use symbols (for scattered data), lines (for continuous data), or perhaps both (connecting individual symbols can help emphasize trends in sparse data sets).</p></li>
+</ul></li>
+<li><p>Second: The appearance.</p>
+<ul>
+<li><p>Log plots;</p></li>
+<li><p>Add a smoothed curve;</p></li>
+<li><p>Consider banking.</p></li>
+</ul></li>
+<li><p>Third: Build a model.</p>
+<ul>
+<li><p>Subtract a trend;</p></li>
+<li><p>Form the ratio to a base value or baseline;</p></li>
+<li><p>Rescale a set of curves to collapse them onto each other.</p></li>
+</ul></li>
+<li><p>Forth (for presentation graphics only):</p>
+<ul>
+<li>Add embellishments.Embellishments and decorations (labels, arrows, special symbols, explanations, and so on) can make a graph much more informative and self-explanatory.</li>
+</ul></li>
+</ul>
+<p><strong>Time as a variable: Time-Series Analysis</strong></p>
+<p>Every time series have several components, which are trend, seasonality, noise and other.</p>
+<p>Given above components, we can summarize what it means to “analysis” a time series.</p>
+<p>We have three basic tasks: description, prediction and control.</p>
+<ul>
+<li><p>Assumptions 1:</p>
+<ul>
+<li><p>Data points have been taken at equally spaced time steps, with no missing data points.</p></li>
+<li><p>If this assumption was violated by any real-world data set, you can try to interpolate the data and re-sample it at equally spaced intervals.</p></li>
+</ul></li>
+<li><p>Assumptions 2:</p>
+<ul>
+<li><p>The time series is sufficiently long (50 points are often considered as an absolute minimum).</p></li>
+<li><p>The exponential smoothing methods are relatively robust even for relatively short series, but somewhere there is a limit.</p></li>
+</ul></li>
+<li><p>Assumptions 3:</p>
+<ul>
+<li><p>The series is stationary: it has no trend, no seasonality, and the character of any noise does not change with time.</p></li>
+<li><p>If this rule is not fulfilled, we may have to identify and remove trend and seasonal components explicitly.</p></li>
+<li><p>Drastic changes in the nature of the series also violate the stationary condition.</p></li>
+<li><p>In such cases we must not continue blindly but instead deal with the break in the data, for example, by treating the data set as two different series (one before and one after the event).</p></li>
+</ul></li>
+</ul>
+<p><strong>Smoothing the time series - removing noise</strong></p>
+<p>There are some method to do it, such as moving average, weighted moving average, exponential smoothing (Holt-Winters method) and so on.</p>
+<pre class="r"><code># exponential smoothing
+dd_past &lt;- window(AirPassengers, end = c(1957, 12))
+m &lt;- HoltWinters(dd_past, seasonal = &quot;mult&quot;)
+dd_pred &lt;- predict(m, n.ahead = 36)
+plot(m, dd_pred)
+lines(AirPassengers)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p><strong>More than two variables: graphical multivariate analysis</strong></p>
+<p><strong>The scatter-plot matrix</strong></p>
+<pre class="r"><code># scatter plot matrix
+
+c2009 &lt;- subset(countries, Year == 2009,
+                select = c(Name, GDP, laborrate, healthexp, infmortality))
+
+panel.cor &lt;- function(x, y, digits=2, prefix=&quot;&quot;, cex.cor, ...) {
+  usr &lt;- par(&quot;usr&quot;)
+  on.exit(par(usr))
+  par(usr = c(0, 1, 0, 1))
+  r &lt;- abs(cor(x, y, use=&quot;complete.obs&quot;))
+  txt &lt;- format(c(r, 0.123456789), digits=digits)[1]
+  txt &lt;- paste(prefix, txt, sep=&quot;&quot;)
+  if(missing(cex.cor)) cex.cor &lt;- 0.8/strwidth(txt)
+  text(0.5, 0.5, txt, cex =  cex.cor * (1 + r) / 2)
+}
+
+panel.hist &lt;- function(x, ...)
+{
+  usr &lt;- par(&quot;usr&quot;); on.exit(par(usr))
+  par(usr = c(usr[1:2], 0, 1.5) )
+  h &lt;- hist(x, plot = FALSE)
+  breaks &lt;- h$breaks; nB &lt;- length(breaks)
+  y &lt;- h$counts; y &lt;- y/max(y)
+  rect(breaks[-nB], 0, breaks[-1], y, col = &quot;cyan&quot;, ...)
+}
+
+pairs(c2009[,2:5], upper.panel = panel.cor,
+      diag.panel  = panel.hist,
+      lower.panel = panel.smooth)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<pre class="python"><code>iris = pd.read_csv(&#39;E:\\git\\my_blog\\seaborn-data\\iris.csv&#39;)
+
+plt.close(&#39;all&#39;)
+sns.pairplot(iris)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-10-1.png" width="493" /></p>
+<p><strong>The conditional plots</strong></p>
+<p>Conditional plots are especially useful if some of the variables in a data set are clearly “control” variables.</p>
+<p>Because it provide a systematic way to study the dependence of the remaining variables on the controls.</p>
+<pre class="r"><code># conditional plots
+ggplot(mpg, aes(x = displ, y = hwy)) +
+  geom_point() +
+  facet_grid(drv ~ cyl) +
+  ggtitle(&#39;The conditional plots in R by ggplot2&#39;) +
+  theme(plot.title = element_text(hjust = 0.5, size = rel(1.5), face = &quot;bold&quot;))</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-11-3.png" width="672" /></p>
+<pre class="python"><code>plt.close(&#39;all&#39;)
+sns.lmplot(x=&quot;total_bill&quot;, y=&quot;tip&quot;, hue=&quot;smoker&quot;, col=&quot;time&quot;, data=tips)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-12-1.png" width="532" /></p>
+<p>There are also many methods to make a graph, you could explore them right away.</p>
+<p><strong>Referenced:</strong></p>
+<ul>
+<li><p>Data Analysis with Open Source Tools</p></li>
+<li><p>R Graphics Cookbook</p></li>
+</ul>
+<p>Welcome your advice and suggestion!</p>
+<p>Just record, this article was posted at linkedin, and have 191 views to November 2021.</p>

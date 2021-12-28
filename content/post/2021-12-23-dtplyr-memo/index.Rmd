@@ -1,0 +1,45 @@
+---
+title: dtplyr memo
+author: ''
+date: '2021-12-23'
+slug: dtplyr-memo
+categories:
+  - R
+tags:
+  - memo
+---
+
+![](images/logo.png)
+
+> data.table + dplyr = dtplyr
+
+We only need use `lazy_dt()` to transform our data in advance, then use dplyr expression as usual,  and then get results by `as.data.table()` or `as.data.frame()` or `as_tibble()`.
+
+```{r, warning=FALSE}
+library(data.table)
+library(dtplyr)
+library(dplyr, warn.conflicts = FALSE)
+
+mtcars2 <- lazy_dt(mtcars)
+
+mtcars2 %>% 
+  filter(wt < 5) %>% 
+  mutate(l100k = 235.21 / mpg) %>% # liters / 100 km
+  group_by(cyl) %>% 
+  summarise(l100k = mean(l100k)) %>% 
+  as_tibble()
+```
+
+
+Details please click below links:
+
++ [writer's blog to introduce this R package](https://www.tidyverse.org/blog/2019/11/dtplyr-1-0-0/)
+
++ [writer's article about how dtplyr translates dplyr expressions into the data.table code](https://dtplyr.tidyverse.org/articles/translation.html)
+
+
+dplyr also has other two backends: 
+
++ **dbplyr** (translates your dplyr code to SQL), you could look at [here](https://dbplyr.tidyverse.org/) and [here](https://dbplyr.tidyverse.org/reference/tbl.src_dbi.html).
+
++ **sparklyr** (for datasets stored in Spark), you could click [here](https://spark.rstudio.com/).

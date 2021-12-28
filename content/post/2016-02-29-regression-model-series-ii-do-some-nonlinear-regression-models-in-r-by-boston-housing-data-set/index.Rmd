@@ -1,0 +1,220 @@
+---
+title: 'Regression Model Series II: Do Some Nonlinear Regression Models In R By Boston
+  Housing Data Set'
+author: ''
+date: '2016-02-29'
+slug: regression-model-series-ii-do-some-nonlinear-regression-models-in-r-by-boston-housing-data-set
+categories:
+  - R
+tags:
+  - regression
+---
+
+This article continue to talk about regression model by Boston Housing data set.
+
+**Neural Networks**
+
+Neural networks is a strong nonlinear regression models made by ideas about how the brain works.
+
+It is apt to over-fit the relationship between the predictors and the response, so we add penalty term like ridge regression called "weight decay" to combat this problem.
+
+
+```{r}
+# load the data set
+library(mlbench)
+data(BostonHousing)
+
+#########################
+### split the data
+#########################
+library(caret)
+set.seed(1234)
+train_index <- createDataPartition(BostonHousing$medv, p = .8, list = FALSE)
+trainset <- BostonHousing[train_index, ]
+testset <- BostonHousing[-train_index, ]
+
+###############################################
+### nerual networks
+# need preprocess to data
+
+# since the regression coefficients are being summed
+# they should be on the same scale
+# the predictors should be centered and scaled prior to modeling
+
+# since they use gradients to optimize the model parameters
+# they are often adversly affected by high correlation
+# pca can be used prior to modeling to eliminate correlations
+
+nnet_grid <- expand.grid(decay = c(0, 0.01, .1),
+                        size = c(1, 3, 5, 7, 9, 11, 13),
+                        bag = FALSE)
+
+set.seed(1234)
+nnet_model <- train(medv ~ .,
+                   data = trainset,
+                   # similar nnet function in nnet package
+                   method = "avNNet",
+                   tuneGrid = nnet_grid,
+                   trControl = trainControl(method= "cv"),
+                   preProc = c("center", "scale"),
+                   # linear relationship between the hidden units and the prediction
+                   linout = TRUE,
+                   # reduce the amount of printed output
+                   trace = FALSE,
+                   # the number of parameters used by the model
+                   # 13 is the number of size (hidden units)
+                   MaxNWts = 13 * ncol(trainset) + 13 + 1,
+                   # the number of iterations to find parameter estimates
+                   maxit = 1000,
+                   allowParallel = FALSE)
+nnet_model
+nnet_pred <- predict(nnet_model, testset)
+postResample(pred = nnet_pred,  obs = testset$medv)
+
+# the plot of performance of model
+df_nnet <- data.frame(predicted = nnet_pred, observed = testset$medv,
+                     residual = testset$medv - nnet_pred)
+
+ggplot(df_nnet, aes(x = predicted, y = observed)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, colour = "blue") +
+  ggtitle("NNet Predicted VS Observed")
+
+ggplot(df_nnet, aes(x = predicted, y = residual)) +
+  geom_point() +
+  geom_hline(yintercept = 0, colour = "blue") +
+  ggtitle("NNet Predicted VS Residual")
+```
+
+Although this performance of nonlinear model is better than our above linear model, the complex of neural network is much more than the simple linear regression.
+
+The cross-validated RMSE profiles of neural network are displayed in below figure.
+
+Increasing the number of weight decay clearly decrease RMSE and increase model stable.
+
+When decay is 0.1, hidden units is 11, we get the optimal model.
+
+```{r}
+plot(nnet_model)
+```
+
+**Multivariate Adaptive Regression Splines (MARS)**
+
+The nature of the MARS features breaks the predictor into two groups and models linear relationships between the predictor and the outcome in each group.
+
+There are two tuning parameters with MARS model: the degree of the features and the number of terms.
+
+MARS model conducts **feature selection**.
+
+The cross-validation procedure picked a model with 19 nprune and was a function of 8 predictors.
+
+From the figure of predicted VS observed and predicted VS residual, when the predicted of price of housing is above 35, the more far from the observed value.
+
+The key predictors are average number of rooms per dwelling (rm), then percentage of lower status of the population (lstat), the third important ingredient is pupil-teacher ratio by town, then transport index (dis, rad), environment index (nox), tax rate, crime rate.
+
+```{r}
+#####################################################
+### multivariate adaptive regression splines (MARS)
+set.seed(1234)
+mars_model <- train(medv ~ .,
+                   data = trainset,
+                   method = "earth",
+                   tuneGrid = expand.grid(degree = 1, nprune = 2:38),
+                   trControl = trainControl(method= "cv"))
+mars_model
+# mars_model$finalModel
+# summary(mars_model$finalModel)
+
+plot(mars_model)
+mars_pred <- predict(mars_model, testset)
+postResample(pred = mars_pred,  obs = testset$medv)
+
+#  importance of variables
+mars_imp <- varImp(mars_model, scale = FALSE)
+plot(mars_imp)
+
+# the plot of performance of model
+df_mars <- data.frame(predicted = as.numeric(mars_pred), observed = testset$medv,
+                     residual = as.numeric(testset$medv - mars_pred))
+
+ggplot(df_mars, aes(x = predicted, y = observed)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, colour = "blue") +
+  ggtitle("MARS Predicted VS Observed")
+
+ggplot(df_mars, aes(x = predicted, y = residual)) +
+  geom_point() +
+  geom_hline(yintercept = 0, colour = "blue") +
+  ggtitle("MARS Predicted VS Residual")
+
+```
+
+**Support Vector Machines**
+
+SVM are a powerful, flexible model. 
+
+There are some kernel functions that can be used to generalize the regression model and encompass nonlinear functions of the predictors.
+
+The cost parameter is the main tool for adjusting the complexity of the model.
+
+When the cost is large, the model becomes very flexible; when the cost is small, the model more likely to under-fit.
+
+Since the predictors enter into the model as the sum of cross products, differences in the predictor scales can affect the model. 
+
+Therefore, we should centering and scaling the predictors prior to building an SVM model.
+```{r}
+#####################################
+### support vector machines
+# need preprocess to data 
+set.seed(1234)
+svm_radial_model <- train(medv ~ .,
+                         data = trainset,
+                         method = "svmRadial",
+                         preProc = c("center", "scale"),
+                         tuneLength = 14,
+                         trControl = trainControl(method= "cv"))
+svm_radial_model
+svm_radial_pred <- predict(svm_radial_model, testset)
+postResample(pred = svm_radial_pred,  obs = testset$medv)
+
+update(plot(svm_radial_model, scales = list(x = list(log = 2))),
+       main = "The Cross-Validation Profiles for SVM Radial Model")                
+```
+
+**K-Nearest Neighbors**
+
+The KNN approach simply predicts a new sample using the K-closest samples from the training set.
+
+The basic KNN method depends on how the user defines distance between samples, so the scale of the predictors can have a dramatic influence on the distances among samples. 
+
+To avoid this potential bias, we recommend that all predictors be centered and scaled prior to performing KNN.
+
+In addition to the scaling, if there are some missing predictors values, then the distances between predictors are not be computed, we could excluded the missing values or impute the missing data use some methods.
+
+The KNN method can have poor predictive performance when there are some irrelevant or noisy predictors, which can cause similar samples to be driven away from each other in the predictor space.
+
+Hence, removing irrelevant, noise-laden predictors is a key-processing step for KNN.
+```{r}
+#####################################
+### k-nearest neighbors
+# need preprocess to data 
+set.seed(1234)
+knn_model <- train(trainset[, 1:13], trainset[, 14],
+                  method = "knn",
+                  preProc = c("center", "scale"),
+                  tuneGrid = data.frame(k = 1:20),
+                  trControl = trainControl(method= "cv"))
+knn_model
+knn_pred <- predict(knn_model, testset[, 1:13])
+postResample(pred = knn_pred,  obs = testset$medv)
+
+update(plot(knn_model), main = "The Cross-Validation Profiles for KNN Model")
+```
+
+**Referenced:**
+  
+1. Applied Predictive Modeling
+
+2. http://topepo.github.io/caret/index.html
+
+Just record, this article was posted at linkedin, and have 362 views to November 2021.

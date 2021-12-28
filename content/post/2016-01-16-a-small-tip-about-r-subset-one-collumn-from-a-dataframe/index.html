@@ -1,0 +1,41 @@
+---
+title: A small tip about R --- Subset one collumn from a dataframe
+author: ''
+date: '2016-01-16'
+slug: a-small-tip-about-r-subset-one-collumn-from-a-dataframe
+categories:
+  - R
+tags: [tips]
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<p>For example:</p>
+<pre class="r"><code>temp &lt;- data.frame(x = c(1, 2, 4), y = c(34, 23, 45))</code></pre>
+<p>method 1. <strong>temp[1]</strong> get a <strong>data frame</strong></p>
+<p>method 2. <strong>temp[, 1]</strong> get a <strong>vector</strong></p>
+<p>Below is R code and output.</p>
+<pre class="r"><code>temp</code></pre>
+<pre><code>##   x  y
+## 1 1 34
+## 2 2 23
+## 3 4 45</code></pre>
+<pre class="r"><code>str(temp)</code></pre>
+<pre><code>## &#39;data.frame&#39;:    3 obs. of  2 variables:
+##  $ x: num  1 2 4
+##  $ y: num  34 23 45</code></pre>
+<pre class="r"><code>temp[1]</code></pre>
+<pre><code>##   x
+## 1 1
+## 2 2
+## 3 4</code></pre>
+<pre class="r"><code>str(temp[1])</code></pre>
+<pre><code>## &#39;data.frame&#39;:    3 obs. of  1 variable:
+##  $ x: num  1 2 4</code></pre>
+<pre class="r"><code>temp[, 1]</code></pre>
+<pre><code>## [1] 1 2 4</code></pre>
+<pre class="r"><code>str(temp[, 1])</code></pre>
+<pre><code>##  num [1:3] 1 2 4</code></pre>
+<p>Welcome your advice and suggestion!</p>
+<p>Just record, this article was posted at linkedin, and have 9 views to November 2021.</p>

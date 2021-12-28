@@ -1,0 +1,35 @@
+---
+title: Project Euler 1
+author: ''
+date: '2013-05-14'
+slug: project-euler-1
+categories:
+  - R
+tags:
+  - euler
+---
+
+这是一系列从易到难的挑战。
+
+你想练习自己的编程能力，却没有有趣的问题吗？
+
+猛击下面的网址，挑战自己吧！
+
+http://projecteuler.net/problems
+
+> Multiples of 3 and 5
+
+> Problem 1
+
+> If we list all the natural numbers below 10 that are multiples of 3 or 5, we get 3, 5, 6 and 9. The sum of these multiples is 23.
+
+> Find the sum of all the multiples of 3 or 5 below 1000.
+
+> 问题1：找出1000以下3的倍数或5的倍数的和。
+
+```{r, collapse=TRUE}
+x <- 1:999
+sum(x[x%%3==0 | x%%5==0])
+```
+
+备注：转移自新浪博客，截至2021年11月，原阅读数26，评论1个。

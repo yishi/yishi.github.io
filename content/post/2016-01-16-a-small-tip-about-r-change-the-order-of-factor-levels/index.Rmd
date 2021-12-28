@@ -1,0 +1,43 @@
+---
+title: A small tip about R --- Change the order of factor levels
+author: ''
+date: '2016-01-16'
+slug: a-small-tip-about-r-change-the-order-of-factor-levels
+categories:
+  - R
+tags:
+  - tips
+---
+
+When you plot a bar plot by ggplot2, you may be want to change the order of factor levels.
+
+For example:
+
+```{r}
+library(ggplot2)
+
+temp <- data.frame(x = factor(letters[1:4]), y = c(34, 23, 15, 46))
+
+ggplot(temp, aes(x = x, y = y)) + geom_bar(stat = "identity")
+```
+
+If you want to order the bar by decreasing, you need to change the order of factor levels by y.
+
+```{r}
+temp$x
+
+temp$x <- reorder(temp$x, temp$y)
+
+temp$x
+
+ggplot(temp, aes(x = x, y = y)) + geom_bar(stat = "identity")
+```
+
+or you also could also want to use other methods, for example:
+```{r}
+temp$x <- factor(temp$x, levels = as.character(temp$x[order(temp$y)]))
+```
+
+Welcome your advice and suggestion!
+
+Just record, this article was posted at linkedin, and have 74 views to November 2021.

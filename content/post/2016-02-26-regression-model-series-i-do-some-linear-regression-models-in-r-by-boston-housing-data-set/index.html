@@ -1,0 +1,342 @@
+---
+title: 'Regression Model Series I: Do Some Linear Regression Models In R By Boston
+  Housing Data Set'
+author: ''
+date: '2016-02-26'
+slug: regression-model-series-i-do-some-linear-regression-models-in-r-by-boston-housing-data-set
+categories:
+  - R
+tags:
+  - regression
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<p>This data set have been taken from the UCI Repository Of Machine Learning Databases at <a href="http://www.ics.uci.edu/~mlearn/MLRepository.html">here</a>.</p>
+<p><img src="images/1.jpg" /></p>
+<p>We could directly load this data set by <strong>mlbench</strong> package.</p>
+<p>Using this data set, we could predict Boston housing price by some ingredients such as education index (ptratio : pupil-teacher ratio by town), society index (crim: per capita crime rate by town; b: the proportion of blacks by town; lstat: percentage of lower status of the population), transportation index(chas: if tract bounds river of Charles; rad: index of accessibility to radial highways; dis: weighted distances to five Boston employment centres), environment index(nox: nitric oxides concentration), land index(zn: proportion of residential land zoned for lots; indus: proportion of non-retail business acres per town; rm: average number of rooms per dwelling; age: proportion of owner-occupied units built prior to 1940; tax: full-value property-tax rate).</p>
+<p>The first step is to understand the data, which can easily be done through a graph.</p>
+<p>From the scatter plot and correlation plot, we can see some variables such as rm, lstat, nox, crim have relationship with outcome variable medv.</p>
+<p>Clearly, as average number of rooms per dwelling (rm) increases, the median price of home increase.</p>
+<p>They have positive correlation.</p>
+<p>As percentage of lower status of the population (lstat), nitric oxides concentration (nox), per capita crime rate by town (crim) increase, the median price of home drop.</p>
+<p>They have negative correlation.</p>
+<pre class="r"><code>###################
+# load the data set
+library(mlbench)
+data(BostonHousing)
+# str(BostonHousing)
+
+#########################
+### explore the data set
+#########################
+library(caret)</code></pre>
+<pre><code>## 载入需要的程辑包：ggplot2</code></pre>
+<pre><code>## 载入需要的程辑包：lattice</code></pre>
+<pre class="r"><code>featurePlot(x = BostonHousing[, c(1:3, 5:13)],
+            y = BostonHousing$medv,
+            plot = &quot;scatter&quot;,
+            layout = c(4, 3))</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<pre class="r"><code>library(corrplot)</code></pre>
+<pre><code>## corrplot 0.90 loaded</code></pre>
+<pre class="r"><code>corrplot::corrplot(cor(BostonHousing[, -4]),
+                   order = &quot;hclust&quot;,
+                   tl.cex = .8)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-1-2.png" width="672" /></p>
+<p>After understanding the data, the next step is to build and evaluate a model.</p>
+<p>A standard approach is to take a random samples of the data for model building and use the rest to understand model performance.</p>
+<pre class="r"><code>#########################
+### split the data
+#########################
+set.seed(1234)
+train_index &lt;- createDataPartition(BostonHousing$medv, p = .8, list = FALSE)
+trainset &lt;- BostonHousing[train_index, ]
+testset &lt;- BostonHousing[-train_index, ]
+
+str(trainset)</code></pre>
+<pre><code>## &#39;data.frame&#39;:    407 obs. of  14 variables:
+##  $ crim   : num  0.0273 0.069 0.0299 0.0883 0.2112 ...
+##  $ zn     : num  0 0 0 12.5 12.5 12.5 12.5 12.5 12.5 0 ...
+##  $ indus  : num  7.07 2.18 2.18 7.87 7.87 7.87 7.87 7.87 7.87 8.14 ...
+##  $ chas   : Factor w/ 2 levels &quot;0&quot;,&quot;1&quot;: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ nox    : num  0.469 0.458 0.458 0.524 0.524 0.524 0.524 0.524 0.524 0.538 ...
+##  $ rm     : num  6.42 7.15 6.43 6.01 5.63 ...
+##  $ age    : num  78.9 54.2 58.7 66.6 100 85.9 94.3 82.9 39 61.8 ...
+##  $ dis    : num  4.97 6.06 6.06 5.56 6.08 ...
+##  $ rad    : num  2 3 3 5 5 5 5 5 5 4 ...
+##  $ tax    : num  242 222 222 311 311 311 311 311 311 307 ...
+##  $ ptratio: num  17.8 18.7 18.7 15.2 15.2 15.2 15.2 15.2 15.2 21 ...
+##  $ b      : num  397 397 394 396 387 ...
+##  $ lstat  : num  9.14 5.33 5.21 12.43 29.93 ...
+##  $ medv   : num  21.6 36.2 28.7 22.9 16.5 18.9 15 18.9 21.7 20.4 ...</code></pre>
+<p>For regression problems where we try to predict a numeric value, the residuals are important source of information.</p>
+<p>Residuals are computed as the observed value minus the predicted value.</p>
+<p>Because of residuals have positive values and negative values, positive residual add negative residual will decrease the influence of true residual, so square the residuals is a good method.</p>
+<p>To a series of squared residuals, the mean is a better summary approach, so we need get mean of the squared residuals.</p>
+<p>But this value is too big compare to single residuals, so we compute the square root of this big value, then we get the measures, root mean squared error (RMSE).</p>
+<p><span class="math display">\[RMSE\ =\ \sqrt{\left\{\frac{\sum_{_{i\ =\ 1}}^n\left(X_{obs,\ i}\ -\ X_{model,\ i}\right)^2}{n}\right\}}\]</span>
+When predicting numeric values, the root mean squared error (RMSE) is commonly used to evaluate models.</p>
+<p>The value of RMSE is usually interpreted as the average distance between the observed values and the model predictions.</p>
+<p>Another common metric is R square, this value can interpreted as the proportion of the information in the data that is explained by the model.</p>
+<p>Now, it is time to build models.</p>
+<p><strong>Linear Regression</strong></p>
+<p>The most common regression model is linear regression, we try it first.</p>
+<p>From RMSE and R squared, linear regression seems good.</p>
+<p>But from below figure, we could see when the price of house at extreme values such as the smallest or the largest value, the predicted value is lower than the observed value, this also lead some of the residuals are higher than others.</p>
+<pre class="r"><code>### ordinary linear regression
+set.seed(1234)
+lm_model &lt;- train(medv ~ .,
+                 data = trainset,
+                 method = &quot;lm&quot;,
+                 trControl = trainControl(method= &quot;cv&quot;))
+lm_model</code></pre>
+<pre><code>## Linear Regression 
+## 
+## 407 samples
+##  13 predictor
+## 
+## No pre-processing
+## Resampling: Cross-Validated (10 fold) 
+## Summary of sample sizes: 366, 367, 365, 366, 366, 366, ... 
+## Resampling results:
+## 
+##   RMSE      Rsquared   MAE     
+##   4.822176  0.7484882  3.466031
+## 
+## Tuning parameter &#39;intercept&#39; was held constant at a value of TRUE</code></pre>
+<pre class="r"><code># lm_model$finalModel
+
+lm_pred &lt;- predict(lm_model, testset)
+postResample(pred = lm_pred,  obs = testset$medv)</code></pre>
+<pre><code>##     RMSE Rsquared      MAE 
+## 4.613531 0.673737 3.277997</code></pre>
+<pre class="r"><code># visulization the performance of the model
+library(ggplot2)
+df_lm &lt;- data.frame(predicted = lm_pred, observed = testset$medv)
+ggplot(df_lm, aes(x = predicted, y = observed)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, colour = &quot;blue&quot;) +
+  ggtitle(&quot;Linear Regression Predicted VS Observed&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<pre class="r"><code>df_lm2 &lt;- data.frame(predicted = lm_pred, residual = testset$medv - lm_pred)
+ggplot(df_lm2, aes(x = predicted, y = residual)) +
+  geom_point() +
+  geom_hline(yintercept = 0, colour = &quot;blue&quot;) +
+  ggtitle(&quot;Linear Regression Predicted VS Residual&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-3-2.png" width="672" /></p>
+<p><strong>Principal Component Regression</strong></p>
+<p>If we have some highly correlated predictors in the data set, we could use PCA (principal component analysis) for pre-processing guarantees that the resulting predictors will be uncorrelated.</p>
+<p>Pre-processing predictors via PCA prior to performing regression is known as principal component regression (PCR).</p>
+<pre class="r"><code>###  principal component regression
+# need prprocess to data
+set.seed(1234)
+pcr_model &lt;- train(medv ~ .,
+                  data = trainset,
+                  method = &quot;pcr&quot;,
+                  preProcess = c(&quot;center&quot;, &quot;scale&quot;),
+                  tuneGrid = expand.grid(ncomp = 1:13),
+                  trControl = trainControl(method= &quot;cv&quot;))
+pcr_model</code></pre>
+<pre><code>## Principal Component Analysis 
+## 
+## 407 samples
+##  13 predictor
+## 
+## Pre-processing: centered (13), scaled (13) 
+## Resampling: Cross-Validated (10 fold) 
+## Summary of sample sizes: 366, 367, 365, 366, 366, 366, ... 
+## Resampling results across tuning parameters:
+## 
+##   ncomp  RMSE      Rsquared   MAE     
+##    1     7.306093  0.4235402  5.212941
+##    2     7.052103  0.4580436  5.217564
+##    3     5.690063  0.6469873  4.022623
+##    4     5.402426  0.6824286  3.743411
+##    5     5.012892  0.7303256  3.464402
+##    6     5.018015  0.7307558  3.469878
+##    7     5.011445  0.7309683  3.454470
+##    8     5.033895  0.7291009  3.482035
+##    9     5.047531  0.7278791  3.487772
+##   10     5.068993  0.7265080  3.542869
+##   11     5.060168  0.7272335  3.544173
+##   12     4.915346  0.7366414  3.502676
+##   13     4.822176  0.7484882  3.466031
+## 
+## RMSE was used to select the optimal model using the smallest value.
+## The final value used for the model was ncomp = 13.</code></pre>
+<pre class="r"><code>pcr_pred &lt;- predict(pcr_model, testset)
+postResample(pred = pcr_pred,  obs = testset$medv)</code></pre>
+<pre><code>##     RMSE Rsquared      MAE 
+## 4.613531 0.673737 3.277997</code></pre>
+<p>But PCA does not consider any aspects of the response when it selects its components.</p>
+<p>Instead, it simply chases the variability present throughout the predictor space.</p>
+<p>If the variability in the predictor space is not related to the variability of the response, then PCR can have difficulty identifying a predictive relationship when one might actually exist.</p>
+<p><strong>Partial Least Squares</strong></p>
+<p>Because of this inherent problem with PCR, we recommend PLS (partial least squares) model when there are correlated predictors and a linear regression-type model is desired.</p>
+<p>Prior to performing pls, the predictors should be centered and scaled, especially if the predictors are on scales of differing magnitude, for PLS will seek directions of maximum variation while simultaneously considering correlation with the response.</p>
+<pre class="r"><code>###  partial least squares
+# need prprocess to data
+set.seed(1234)
+pls_model &lt;- train(medv ~ .,
+                  data = trainset,
+                  method = &quot;pls&quot;,
+                  preProcess = c(&quot;center&quot;, &quot;scale&quot;),
+                  tuneGrid = expand.grid(ncomp = 1:13),
+                  trControl = trainControl(method= &quot;cv&quot;))
+pls_model</code></pre>
+<pre><code>## Partial Least Squares 
+## 
+## 407 samples
+##  13 predictor
+## 
+## Pre-processing: centered (13), scaled (13) 
+## Resampling: Cross-Validated (10 fold) 
+## Summary of sample sizes: 366, 367, 365, 366, 366, 366, ... 
+## Resampling results across tuning parameters:
+## 
+##   ncomp  RMSE      Rsquared   MAE     
+##    1     6.529922  0.5394597  4.640817
+##    2     5.008324  0.7299647  3.470378
+##    3     4.910683  0.7403384  3.419230
+##    4     4.913909  0.7394995  3.478993
+##    5     4.882794  0.7410699  3.505198
+##    6     4.843614  0.7449266  3.481049
+##    7     4.822863  0.7477101  3.463915
+##    8     4.824090  0.7480109  3.465997
+##    9     4.821338  0.7485221  3.464770
+##   10     4.822525  0.7484421  3.466604
+##   11     4.822200  0.7484866  3.466065
+##   12     4.822185  0.7484874  3.466048
+##   13     4.822176  0.7484882  3.466031
+## 
+## RMSE was used to select the optimal model using the smallest value.
+## The final value used for the model was ncomp = 9.</code></pre>
+<pre class="r"><code># pls_model$results
+
+pls_pred &lt;- predict(pls_model, testset)
+postResample(pred = pls_pred,  obs = testset$medv)</code></pre>
+<pre><code>##     RMSE Rsquared      MAE 
+## 4.612142 0.673785 3.272936</code></pre>
+<p>PLS find the final value used for the model was ncomp = 9 and PCR find ncomp = 13.</p>
+<p>We see that the supervised dimension reduction finds a minimum RMSE with significantly fewer components than unsupervised dimension reduction.</p>
+<pre class="r"><code># visualization to compare pcr and pls models
+pcr_model$results$model &lt;- &quot;pcr&quot;
+pls_model$results$model &lt;- &quot;pls&quot;
+
+df_pcr_pls &lt;- rbind(pcr_model$results, pls_model$results)
+ggplot(df_pcr_pls, aes(x = ncomp, y = RMSE, colour = model)) +
+  geom_line() +
+  geom_point() +
+  ggtitle(&quot;PCR VS PLS&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-6-1.png" width="672" />
+Prediction of the test set using the optimal PCR and PLS models.</p>
+<p>Although the predictive ability of these models are similarity, PLS finds a simpler model that use fewer components.</p>
+<p>From PLS model, we could compute the importance of the predictors.</p>
+<p>The most important predictor is average number of rooms per dwelling, then percentage of lower status of the population, education index (pupil-teacher ratio by town), transportation index( weighted distances to five Boston employment centres; index of accessibility to radial highways).</p>
+<pre class="r"><code># rank the importance of the predictors
+pls_imp &lt;- varImp(pls_model, scale = FALSE)</code></pre>
+<pre><code>## 
+## 载入程辑包：&#39;pls&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:corrplot&#39;:
+## 
+##     corrplot</code></pre>
+<pre><code>## The following object is masked from &#39;package:caret&#39;:
+## 
+##     R2</code></pre>
+<pre><code>## The following object is masked from &#39;package:stats&#39;:
+## 
+##     loadings</code></pre>
+<pre class="r"><code>plot(pls_imp, scales = list(y = list(cex = .95)))</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-7-1.png" width="672" />
+<strong>Penalized Models (Ridge regression)</strong></p>
+<p>One common consequence of large correlated variables is that the variance can become large, we could add penalty on the parameter estimates to making a trade-off between the model variance and bias.</p>
+<p>Ridge regression adds a penalty on the sum of the squared regression parameters:</p>
+<p><img src="images/2.jpg" /></p>
+<pre class="r"><code>### ridge regression
+# need prprocess to data
+ridge_grid &lt;- expand.grid(lambda = seq(0, .1, length = 15))
+set.seed(1234)
+ridge_model &lt;- train(medv ~ .,
+                    data = trainset,
+                    method = &quot;ridge&quot;,
+                    preProcess = c(&quot;center&quot;, &quot;scale&quot;),
+                    tuneGrid = ridge_grid,
+                    trControl = trainControl(method= &quot;cv&quot;))
+ridge_model</code></pre>
+<pre><code>## Ridge Regression 
+## 
+## 407 samples
+##  13 predictor
+## 
+## Pre-processing: centered (13), scaled (13) 
+## Resampling: Cross-Validated (10 fold) 
+## Summary of sample sizes: 366, 367, 365, 366, 366, 366, ... 
+## Resampling results across tuning parameters:
+## 
+##   lambda       RMSE      Rsquared   MAE     
+##   0.000000000  4.822176  0.7484882  3.466031
+##   0.007142857  4.817436  0.7489356  3.452462
+##   0.014285714  4.815238  0.7491745  3.441825
+##   0.021428571  4.814682  0.7492830  3.433461
+##   0.028571429  4.815253  0.7493054  3.427861
+##   0.035714286  4.816641  0.7492682  3.424568
+##   0.042857143  4.818653  0.7491881  3.422342
+##   0.050000000  4.821162  0.7490760  3.420708
+##   0.057142857  4.824086  0.7489392  3.419737
+##   0.064285714  4.827364  0.7487826  3.420070
+##   0.071428571  4.830956  0.7486102  3.420934
+##   0.078571429  4.834833  0.7484243  3.422469
+##   0.085714286  4.838973  0.7482273  3.424424
+##   0.092857143  4.843359  0.7480204  3.427251
+##   0.100000000  4.847980  0.7478051  3.430167
+## 
+## RMSE was used to select the optimal model using the smallest value.
+## The final value used for the model was lambda = 0.02142857.</code></pre>
+<pre class="r"><code>ridge_pred &lt;- predict(ridge_model, testset)
+postResample(pred = ridge_pred,  obs = testset$medv)</code></pre>
+<pre><code>##      RMSE  Rsquared       MAE 
+## 4.5838793 0.6772976 3.2276938</code></pre>
+<p>Using cross-validation, the penalty value was chosen by the minimum RMSE.</p>
+<p>When there is no penalty, the error is inflated.When the penalty is increased, the error decrease.</p>
+<p>When the penalty increases beyond 0.0214, the bias becomes large and the model starts to under-fit.</p>
+<pre class="r"><code>update(plot(ridge_model), xlab = &quot;Penalty&quot;,
+       main = &quot;The Cross-Validation Profiles for Ridge Regression Model&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-9-1.png" width="672" />
+<strong>Penalized Models (LASSO and others)</strong></p>
+<p>A sister model to ridge regression is the least absolute shrinkage and selection operator (lasso) model.</p>
+<p>The lasso could conduct feature selection.
+<img src="images/3.jpg" /></p>
+<p>The model <strong>LARS (least angle regression)</strong> is a broad framework that encompasses the lasso and similar models, and can be used to fit lasso more efficiently, especially in high-dimensional problems.</p>
+<p>A generalization of the lasso model and ridge regression model is the <strong>elastic net</strong>.</p>
+<p>This model combines the two types of penalties:
+<img src="images/4.jpg" /></p>
+<p>The advantage of this model is that it can regularization via the ridge-type penalty with the feature selection quality of the lasso penalty.</p>
+<p>This model will effectively deal with groups of high correlated predictors.</p>
+<p>The plot shows the performance profiles across three values of the ridge penalty and 20 values of the lasso penalty.</p>
+<pre class="r"><code>### elastic net
+# need prprocess to data
+enet_grid &lt;- expand.grid(lambda = c(0, 0.01, .1),
+                        fraction = seq(.05, 1, length = 20))
+set.seed(1234)
+enet_model &lt;- train(medv ~ .,
+                   data = trainset,
+                   method = &quot;enet&quot;,
+                   preProcess = c(&quot;center&quot;, &quot;scale&quot;),
+                   tuneGrid = enet_grid,
+                   trControl = trainControl(method= &quot;cv&quot;))
+# enet_model
+enet_pred &lt;- predict(enet_model, testset)
+# postResample(pred = enet_pred,  obs = testset$medv)
+
+update(plot(enet_model), main = &quot;The Cross-Validation Profiles for Elastic Net Model&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p>```
+<strong>Referenced:</strong></p>
+<ol style="list-style-type: decimal">
+<li><p>Applied Predictive Modeling</p></li>
+<li><p><a href="http://topepo.github.io/caret/index.html" class="uri">http://topepo.github.io/caret/index.html</a></p></li>
+</ol>
+<p>Just record, this article was posted at linkedin, and have 2211 views to November 2021.</p>

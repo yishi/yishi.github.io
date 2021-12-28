@@ -1,0 +1,211 @@
+---
+title: 'Data Analysis Series IV: The Introduction of some simulations'
+author: ''
+date: '2016-05-23'
+slug: data-analysis-series-iv-the-introduction-of-some-simulations
+categories:
+  - R
+tags:
+  - data analysis
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<p>Simulations in the form of re-sampling methods provide a family of techniques for extracting information from data.</p>
+<p>For example: we are given a data set with the results of eight tosses of a coin: six heads and two tails.</p>
+<p>Given this data, would we say the coin is biased?</p>
+<p>We can simulate tosses of a coin, for various degrees of imbalance, and then compare the simulation results to our data set.</p>
+<pre class="r"><code>library(ggplot2)
+
+k = seq(0, 1, by = 0.05)
+df &lt;- data.frame(p = rep(k, each = 60),
+                 head = unlist(lapply(k, function(x) rbinom(n = 60, size = 8, prob = x))))
+
+ggplot(df, aes(x = p, y = head)) +
+  geom_point(position = &quot;jitter&quot;, shape = 1, size = 2, alpha = .5) +
+  geom_hline(yintercept = 6, size = 1, linetype = &quot;dashed&quot;, colour = &quot;blue&quot;) +
+  geom_vline(xintercept = 0.5, size = 1, linetype = &quot;dashed&quot;, colour = &quot;blue&quot;) +
+  ggtitle(&quot;Simulating about toss of a coin&quot;) +
+  theme(plot.title = element_text(hjust = 0.5, size =rel(1.5), face = &#39;bold&#39;))</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-1-1.png" width="672" />
+The figure is quite clear: for p = 0.5 (i.e., a balanced coin), it is pretty unlikely to obtain six or more heads, although not all impossible.</p>
+<p>On the other hand, given that we have observed six heads, we would expect the parameter to fall into the range p = 0.6, …, 0.7.</p>
+<p>The simulation therefore not only helped us understand the actual data set but also allowed us to explore the system that produced it.</p>
+<p><strong>Monte Carlo Simulations</strong></p>
+<p><strong>Monty Hall Problem</strong></p>
+<p>The strategy “stick” wins 333 trials in 1000 trials, “choose” wins half the time, but “switch” amazingly wins in two thirds of all cases.</p>
+<pre class="r"><code># Monty Hall Problem
+choose_strategy &lt;- function(strategy) {
+  wins &lt;- 0
+  for (trial in 1 : 1000) {
+    # raw envelopes
+    envelopes &lt;- c(0, 1, 2)
+   
+    first_choice = sample(envelopes, size = 1)
+   
+    # envelopes after deleter one empty envelope
+    if (first_choice == 0) {
+      envelopes &lt;- c(0, sample(c(1, 2), size = 1))
+    } else {
+      envelopes &lt;- c(0, first_choice)
+    }
+   
+   
+    if (strategy == &#39;stick&#39;) {
+      second_choice &lt;- first_choice
+    } else {
+      if (strategy == &quot;choose&quot;) {
+        second_choice &lt;- sample(envelopes, size = 1)
+      } else {
+        if (strategy == &quot;swith&quot;) {
+          second_choice &lt;- envelopes[which(envelopes != first_choice)]
+        }
+      }
+    }
+   
+    if (second_choice == 0) {
+      wins &lt;- wins + 1
+    }
+   
+    trial &lt;- trial + 1
+  }
+  wins
+}
+
+choose_strategy(strategy = &#39;stick&#39;)</code></pre>
+<pre><code>## [1] 328</code></pre>
+<pre class="r"><code>choose_strategy(strategy = &#39;choose&#39;)</code></pre>
+<pre><code>## [1] 484</code></pre>
+<pre class="r"><code>choose_strategy(strategy = &#39;swith&#39;)</code></pre>
+<pre><code>## [1] 682</code></pre>
+<pre class="r"><code>stick &lt;- c()
+for (i in 1:1000) {
+  stick &lt;- c(stick, choose_strategy(strategy = &#39;stick&#39;))
+  i &lt;- i + 1
+}
+
+hist(stick)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<pre class="r"><code>mean(stick)</code></pre>
+<pre><code>## [1] 333.249</code></pre>
+<pre class="r"><code>sd(stick)</code></pre>
+<pre><code>## [1] 15.07369</code></pre>
+<pre class="r"><code>choose &lt;- c()
+for (i in 1:1000) {
+  choose &lt;- c(choose, choose_strategy(strategy = &#39;choose&#39;))
+  i &lt;- i + 1
+}
+
+hist(choose)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-2-2.png" width="672" /></p>
+<pre class="r"><code>mean(choose)</code></pre>
+<pre><code>## [1] 500.413</code></pre>
+<pre class="r"><code>sd(choose)</code></pre>
+<pre><code>## [1] 15.36178</code></pre>
+<pre class="r"><code>swith &lt;- c()
+for (i in 1:1000) {
+  swith &lt;- c(swith, choose_strategy(strategy = &#39;swith&#39;))
+  i &lt;- i + 1
+}
+
+hist(swith)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-2-3.png" width="672" /></p>
+<pre class="r"><code>mean(swith)</code></pre>
+<pre><code>## [1] 667.12</code></pre>
+<pre class="r"><code>sd(swith)</code></pre>
+<pre><code>## [1] 15.4678</code></pre>
+<p><strong>Obtaining outcome distributions</strong></p>
+<p>We had a visitor population making visits to a certain website.</p>
+<p>Because individual visitors can make repeat visits, the number of unique visitors grows more slowly than the number of total visitors.</p>
+<p>We want to find an simulation for the number of unique visitors over time.</p>
+<pre class="r"><code># visitors to visit a website
+n &lt;- 1000 # total visitors
+k &lt;- 100 # avg visitors per day
+s &lt;- 50 # daily variation
+
+trial &lt;- function() {
+  visitor_for_day &lt;- c()
+  has_visited &lt;- rep(0, n)
+ 
+  for (day in 1 : 31) {
+    visitors_today &lt;- max(0, round(rnorm(n  = 1, mean = k, sd = s)))
+   
+    # pick the individuals who visited today and mark them
+    for (i in sample(1:n, size = visitors_today, replace = TRUE)) {
+      has_visited[i] &lt;- 1
+    }
+   
+    # find the total number of unique visitors so far
+    visitor_for_day &lt;- c(visitor_for_day, sum(has_visited))
+ 
+  }
+  visitor_for_day
+}
+
+df &lt;- data.frame(date = c(), visitor = c())
+for (t in 1:25) {
+  r &lt;- trial()
+
+  for (i in 1:length(r)) {
+    df &lt;- rbind(df, data.frame(date = i, visitor = r[i]))
+  }
+ 
+}
+
+ggplot(df, aes(x = date, y = visitor)) +
+  geom_point(shape = 1) +
+  ggtitle(&quot;Simulating the visitors to visit a website&quot;) +
+  theme(plot.title = element_text(hjust = 0.5, size = rel(1.5), face = &#39;bold&#39;))</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-3-1.png" width="672" />
+<strong>Re-sampling Method</strong></p>
+<p><strong>The Bootstrap</strong></p>
+<p>What if we could draw additional samples from the population?</p>
+<p>We can create additional samples (also of size n) by sampling with replacement from the original sample.</p>
+<p>Here is an example :</p>
+<p>We draw n = 25 points from a standard Gaussian distribution (with mean = 0 and standard deviation = 1).</p>
+<p>To find the bootstrap estimate for the sample mean and its standard error, we draw 100 samples, each containing n = 25 points, from our original sample of 25 points.Points are drawn randomly with replacement.</p>
+<p>Now we ask: what is the spread of the distribution of these 100 bootstrap means?</p>
+<p>From the figure : at the bottom, we see the 25 points of the original data sample; above that, we see the means calculated from the 100 bootstrap samples.</p>
+<pre class="r"><code># bootstrap
+raw &lt;- rnorm(25, mean = 0, sd = 1)
+
+boot_mean &lt;- c()
+for (i in 1: 100) {
+  boot_mean &lt;- c(boot_mean, mean(sample(raw, size = 25, replace = TRUE)))
+}
+
+ggplot(NULL, aes(x = raw)) +
+  # draw the raw data points
+  geom_point(aes(x = raw, y = sample(seq(-.2, -.1, length.out = 25))),
+             position = &quot;jitter&quot;, shape = 22, fill = &quot;green&quot;) +
+  ylim(-.3, .9) +
+  xlim(-3, 3) +
+  xlab(&quot;&quot;) +
+  ylab(&quot;&quot;) +
+  geom_hline(yintercept = 0, linetype = &quot;dashed&quot;) +
+  # draw the density curve of the raw data
+  geom_line(stat = &quot;density&quot;, colour = &quot;green&quot;, size = 1.5, adjust = 1.2) +
+  # draw the normal distribution curve
+  geom_line(aes(x = seq(-3, 3, by = .1), y = dnorm(seq(-3, 3, by = .1))),
+            color = &quot;red&quot;, linetype = &quot;dashed&quot;, size = 1.5) +
+  # the bootstrap data points
+  geom_point(aes(x = boot_mean, y = sample(seq(0.1, .7, length.out = 100))),
+             shape = 21, fill = &quot;blue&quot;, position = &quot;jitter&quot;, size = 2) +
+  # the density curve of the boost means
+  geom_line(aes(x = boot_mean), stat = &quot;density&quot;, adjust = 8,
+            colour = &quot;blue&quot;, linetype = &quot;dashed&quot;, size = 1.5) +
+  ggtitle(&quot;The bootstrap&quot;) +
+  theme(plot.title = element_text(hjust = 0.5, size = rel(1.5), face = &#39;bold&#39;))</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-4-1.png" width="672" />
+When does bootstrapping work?</p>
+<ul>
+<li>The original sample must provide a good representation of the entire population;</li>
+<li>The estimated quantity must depend “smoothly” on the data points, which suggests that bootstrapping does not work well for quantities that depend critically on only a few data points. For example, we may want to estimate the maximum value of some distribution, the bootstrap is not suitable.</li>
+</ul>
+<p><strong>Referenced:</strong></p>
+<ul>
+<li>Data Analysis with Open Source Tools</li>
+</ul>
+<p>Welcome your advice and suggestion!</p>
+<p>Just record, this article was posted at linkedin, and have 49 views to November 2021.</p>

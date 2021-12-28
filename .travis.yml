@@ -1,0 +1,29 @@
+language: r
+
+branches:
+    only:
+        - source
+        
+cache: 
+    packages: yes
+    directories:
+      - $HOME/bin
+      
+r_github_packages:
+    - rstudio/blogdown
+
+before_script:
+    - Rscript -e 'blogdown::install_hugo(version = "0.89.0")'
+
+script:
+    - Rscript -e 'blogdown::build_site()'
+
+deploy:
+    provider: pages
+    skip_cleanup: true
+    github_token: $GITHUB_PAT
+    on:
+        branch: source
+    local_dir: public
+    target_branch: master
+    fqdn: yishi.github.io

@@ -1,0 +1,42 @@
+---
+title: Map Function Replace Apply Family in Base R
+author: ''
+date: '2017-12-01'
+slug: map-function-replace-apply-family-in-base-r
+categories:
+  - R
+tags:
+  - tips
+---
+
+Map function in **tidyverse** package is awesome.
+
+Let us look at one example.
+
++ First of all, we split the dateset “mtcars”" into 3 data frames by variable “cyl”.
+
+```{r, warning=FALSE}
+library(tidyverse)
+
+mtcars %>%
+  split(.$cyl) %>%
+  str()
+```
+
+Then, we want to make linear regression models to 3 data frames at the same time.
+
+```{r}
+mtcars %>%
+  split(.$cyl) %>%
+  map(~lm(mpg ~ wt, data = .))
+```
+
+Wonderful!
+
+If you want the details of map function, please click this [link](http://r4ds.had.co.nz/iteration.html#the-map-functions).
+
+You could look at a better display version in [here](http://rpubs.com/kong_026/map_function), you can also make your rmarkdown documents and share them.
+
+Welcome your advice and suggestion!
+
+Just record, this article was posted at linkedin, and have 17 views to November 2021.

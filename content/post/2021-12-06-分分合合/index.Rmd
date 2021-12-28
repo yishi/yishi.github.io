@@ -1,0 +1,276 @@
+---
+title: 分分合合
+author: ''
+date: '2021-12-06'
+slug: 分分合合
+categories: []
+tags:
+  - life
+---
+
+There are two people, sometimes they are at the same place, sometimes not, now you could see the year and their places.
+
+```{r setup, warning=FALSE, echo=FALSE, message=FALSE}
+
+library(leaflet)
+library(htmltools)
+library(webshot)
+library(png)
+library(tidyverse)
+
+# first time, set make_map chunk option eval = TRUE, set make_animation chunk option eval = FALSE, to make screenshot get .png file
+
+# second time, set make_map chunk option eval = FALSE, set make_animation chunk option eval = TRUE, to get .gif file
+
+# when you want to rerun code, remember to delete ./index_files/figure-html/.png or .gif files
+```
+
+
+```{r make_map, echo=FALSE, screenshot.force= TRUE, eval=FALSE}
+# read raw data
+df <- read.csv(file = './data/data.csv') %>% 
+  mutate(icon_path = ifelse(pig == 1, "./data/Peppa.png", "./data/George.png"))
+
+# often change 3 points
+# setView(lng, lat, zoom)
+# label option font-size 12px or 19px
+# addControl color blue or red text 20005 or 2021
+
+#### 2005
+leaflet(df[df$year == 2005, ]) %>% 
+  addTiles() %>%
+  setView(lng = 113.65, lat = 34.76, zoom = 3) %>%
+  addMarkers(~long, ~lat, 
+             icon = icons(iconUrl = ~icon_path, iconWidth = 70, iconHeight = 95, iconAnchorX = 22, iconAnchorY = 94), 
+             label = ~place, labelOptions = labelOptions(noHide = T, textOnly = T, direction = "bottom",
+                                style = list("color" = "blue", "font-family" = "微软雅黑",
+                                  "font-style" = "bold", "box-shadow" = "3px 3px rgba(0,0,0,0.25)",
+                                  "font-size" = "12px", "border-color" = "rgba(0,0,0,0.5)"))) %>%
+  addControl(div(HTML('<font face="微软雅黑" color=red size=6>2005</font>')), position = "bottomleft")
+             
+### 2006
+leaflet(df[df$year == 2006, ]) %>%
+  addTiles() %>%
+  setView(lng = 113.95, lat = 22.5, zoom = 8) %>%
+  addMarkers(~long, ~lat, 
+             icon = icons(iconUrl = ~icon_path, iconWidth = 70, iconHeight = 95, iconAnchorX = 22, iconAnchorY = 94),  
+             label = ~place, labelOptions = labelOptions(noHide = T, textOnly = T, direction = "bottom",
+                                style = list("color" = "blue", "font-family" = "微软雅黑",
+                                  "font-style" = "bold", "box-shadow" = "3px 3px rgba(0,0,0,0.25)",
+                                  "font-size" = "19px", "border-color" = "rgba(0,0,0,0.5)"))) %>%
+  addControl(div(HTML('<font face="微软雅黑" color=blue size=6>2006</font>')), position = "bottomleft")
+
+### 2007
+leaflet(df[df$year == 2007, ]) %>%
+  addTiles() %>%
+  setView(lng = 113.95, lat = 22.5, zoom = 8) %>%
+  addMarkers(~long, ~lat, 
+             icon = icons(iconUrl = ~icon_path, iconWidth = 70, iconHeight = 95, iconAnchorX = 22, iconAnchorY = 94), 
+             label = ~place, labelOptions = labelOptions(noHide = T, textOnly = T, direction = "bottom",
+                                style = list("color" = "blue", "font-family" = "微软雅黑",
+                                  "font-style" = "bold", "box-shadow" = "3px 3px rgba(0,0,0,0.25)",
+                                  "font-size" = "19px", "border-color" = "rgba(0,0,0,0.5)"))) %>%
+  addControl(div(HTML('<font face="微软雅黑" color=blue size=6>2007</font>')), position = "bottomleft")
+
+#### 2008
+leaflet(df[df$year == 2008, ]) %>% 
+  addTiles() %>%
+  setView(lng = 108.9, lat = 29.3, zoom = 3) %>%
+  addMarkers(~long, ~lat, 
+             icon = icons(iconUrl = ~icon_path, iconWidth = 70, iconHeight = 95, iconAnchorX = 22, iconAnchorY = 94), 
+             label = ~place, labelOptions = labelOptions(noHide = T, textOnly = T, direction = "bottom",
+                                style = list("color" = "blue", "font-family" = "微软雅黑",
+                                  "font-style" = "bold", "box-shadow" = "3px 3px rgba(0,0,0,0.25)",
+                                  "font-size" = "12px", "border-color" = "rgba(0,0,0,0.5)"))) %>%
+  addControl(div(HTML('<font face="微软雅黑" color=blue size=6>2008</font>')), position = "bottomleft")
+
+#### 2009
+leaflet(df[df$year == 2009, ]) %>% 
+  addTiles() %>%
+  setView(lng = 108.9, lat = 29.3, zoom = 4) %>%
+  addMarkers(~long, ~lat, 
+             icon = icons(iconUrl = ~icon_path, iconWidth = 70, iconHeight = 95, iconAnchorX = 22, iconAnchorY = 94), 
+             label = ~place, labelOptions = labelOptions(noHide = T, textOnly = T, direction = "bottom",
+                                style = list("color" = "blue", "font-family" = "微软雅黑",
+                                  "font-style" = "bold", "box-shadow" = "3px 3px rgba(0,0,0,0.25)",
+                                  "font-size" = "12px", "border-color" = "rgba(0,0,0,0.5)"))) %>%
+  addControl(div(HTML('<font face="微软雅黑" color=blue size=6>2009</font>')), position = "bottomleft")
+
+#### 2010
+leaflet(df[df$year == 2010, ]) %>% 
+  addTiles() %>%
+  setView(lng = 113.2, lat = 28.6, zoom = 4) %>%
+  addMarkers(~long, ~lat, 
+             icon = icons(iconUrl = ~icon_path, iconWidth = 70, iconHeight = 95, iconAnchorX = 22, iconAnchorY = 94), 
+             label = ~place, labelOptions = labelOptions(noHide = T, textOnly = T, direction = "bottom",
+                                style = list("color" = "blue", "font-family" = "微软雅黑",
+                                  "font-style" = "bold", "box-shadow" = "3px 3px rgba(0,0,0,0.25)",
+                                  "font-size" = "12px", "border-color" = "rgba(0,0,0,0.5)"))) %>%
+  addControl(div(HTML('<font face="微软雅黑" color=blue size=6>2010</font>')), position = "bottomleft")
+
+#### 2011
+leaflet(df[df$year == 2011, ]) %>% 
+  addTiles() %>%
+  setView(lng = 113.95, lat = 22.5, zoom = 8) %>%
+  addMarkers(~long, ~lat, 
+             icon = icons(iconUrl = ~icon_path, iconWidth = 70, iconHeight = 95, iconAnchorX = 22, iconAnchorY = 94), 
+             label = ~place, labelOptions = labelOptions(noHide = T, textOnly = T, direction = "bottom",
+                                style = list("color" = "blue", "font-family" = "微软雅黑",
+                                  "font-style" = "bold", "box-shadow" = "3px 3px rgba(0,0,0,0.25)",
+                                  "font-size" = "19px", "border-color" = "rgba(0,0,0,0.5)"))) %>%
+  addControl(div(HTML('<font face="微软雅黑" color=blue size=6>2011</font>')), position = "bottomleft")
+
+#### 2012
+leaflet(df[df$year == 2012, ]) %>% 
+  addTiles() %>%
+  setView(lng = 113.95, lat = 22.5, zoom = 8) %>%
+  addMarkers(~long, ~lat, 
+             icon = icons(iconUrl = ~icon_path, iconWidth = 70, iconHeight = 95, iconAnchorX = 22, iconAnchorY = 94), 
+             label = ~place, labelOptions = labelOptions(noHide = T, textOnly = T, direction = "bottom",
+                                style = list("color" = "blue", "font-family" = "微软雅黑",
+                                  "font-style" = "bold", "box-shadow" = "3px 3px rgba(0,0,0,0.25)",
+                                  "font-size" = "19px", "border-color" = "rgba(0,0,0,0.5)"))) %>%
+  addControl(div(HTML('<font face="微软雅黑" color=blue size=6>2012</font>')), position = "bottomleft")
+
+#### 2013
+leaflet(df[df$year == 2013, ]) %>% 
+  addTiles() %>%
+  setView(lng = 113.95, lat = 22.5, zoom = 8) %>%
+  addMarkers(~long, ~lat, 
+             icon = icons(iconUrl = ~icon_path, iconWidth = 70, iconHeight = 95, iconAnchorX = 22, iconAnchorY = 94), 
+             label = ~place, labelOptions = labelOptions(noHide = T, textOnly = T, direction = "bottom",
+                                style = list("color" = "blue", "font-family" = "微软雅黑",
+                                  "font-style" = "bold", "box-shadow" = "3px 3px rgba(0,0,0,0.25)",
+                                  "font-size" = "19px", "border-color" = "rgba(0,0,0,0.5)"))) %>%
+  addControl(div(HTML('<font face="微软雅黑" color=blue size=6>2013</font>')), position = "bottomleft")
+
+#### 2014
+leaflet(df[df$year == 2014, ]) %>% 
+  addTiles() %>%
+  setView(lng = 113.95, lat = 22.5, zoom = 8) %>%
+  addMarkers(~long, ~lat, 
+             icon = icons(iconUrl = ~icon_path, iconWidth = 70, iconHeight = 95, iconAnchorX = 22, iconAnchorY = 94), 
+             label = ~place, labelOptions = labelOptions(noHide = T, textOnly = T, direction = "bottom",
+                                style = list("color" = "blue", "font-family" = "微软雅黑",
+                                  "font-style" = "bold", "box-shadow" = "3px 3px rgba(0,0,0,0.25)",
+                                  "font-size" = "19px", "border-color" = "rgba(0,0,0,0.5)"))) %>%
+  addControl(div(HTML('<font face="微软雅黑" color=blue size=6>2014</font>')), position = "bottomleft")
+
+#### 2015
+leaflet(df[df$year == 2015, ]) %>% 
+  addTiles() %>%
+  setView(lng = 113.65, lat = 34.76, zoom = 3) %>%
+  addMarkers(~long, ~lat, 
+             icon = icons(iconUrl = ~icon_path, iconWidth = 70, iconHeight = 95, iconAnchorX = 22, iconAnchorY = 94), 
+             label = ~place, labelOptions = labelOptions(noHide = T, textOnly = T, direction = "bottom",
+                                style = list("color" = "blue", "font-family" = "微软雅黑",
+                                  "font-style" = "bold", "box-shadow" = "3px 3px rgba(0,0,0,0.25)",
+                                  "font-size" = "12px", "border-color" = "rgba(0,0,0,0.5)"))) %>%
+  addControl(div(HTML('<font face="微软雅黑" color=red size=6>2015</font>')), position = "bottomleft")
+
+#### 2016
+leaflet(df[df$year == 2016, ]) %>% 
+  addTiles() %>%
+  setView(lng = 113.65, lat = 34.76, zoom = 3) %>%
+  addMarkers(~long, ~lat, 
+             icon = icons(iconUrl = ~icon_path, iconWidth = 70, iconHeight = 95, iconAnchorX = 22, iconAnchorY = 94), 
+             label = ~place, labelOptions = labelOptions(noHide = T, textOnly = T, direction = "bottom",
+                                style = list("color" = "blue", "font-family" = "微软雅黑",
+                                  "font-style" = "bold", "box-shadow" = "3px 3px rgba(0,0,0,0.25)",
+                                  "font-size" = "12px", "border-color" = "rgba(0,0,0,0.5)"))) %>%
+  addControl(div(HTML('<font face="微软雅黑" color=blue size=6>2016</font>')), position = "bottomleft")
+
+#### 2017
+leaflet(df[df$year == 2017, ]) %>% 
+  addTiles() %>%
+  setView(lng = 113.65, lat = 34.76, zoom = 3) %>%
+  addMarkers(~long, ~lat, 
+             icon = icons(iconUrl = ~icon_path, iconWidth = 70, iconHeight = 95, iconAnchorX = 22, iconAnchorY = 94), 
+             label = ~place, labelOptions = labelOptions(noHide = T, textOnly = T, direction = "bottom",
+                                style = list("color" = "blue", "font-family" = "微软雅黑",
+                                  "font-style" = "bold", "box-shadow" = "3px 3px rgba(0,0,0,0.25)",
+                                  "font-size" = "12px", "border-color" = "rgba(0,0,0,0.5)"))) %>%
+  addControl(div(HTML('<font face="微软雅黑" color=red size=6>2017</font>')), position = "bottomleft")
+########################
+### 2018
+leaflet(df[df$year == 2018, ]) %>%
+  addTiles() %>%
+  setView(lng = 114.2, lat = 22.8, zoom = 8) %>%
+  addMarkers(~long, ~lat, 
+             icon = icons(iconUrl = ~icon_path, iconWidth = 70, iconHeight = 95, iconAnchorX = 22, iconAnchorY = 94),  
+             label = ~place, labelOptions = labelOptions(noHide = T, textOnly = T, direction = "bottom",
+                                style = list("color" = "blue", "font-family" = "微软雅黑",
+                                  "font-style" = "bold", "box-shadow" = "3px 3px rgba(0,0,0,0.25)",
+                                  "font-size" = "19px", "border-color" = "rgba(0,0,0,0.5)"))) %>%
+  addControl(div(HTML('<font face="微软雅黑" color=blue size=6>2018</font>')), position = "bottomleft")
+
+### 2019
+leaflet(df[df$year == 2019, ]) %>%
+  addTiles() %>%
+  setView(lng = 114.2, lat = 22.8, zoom = 8) %>%
+  addMarkers(~long, ~lat, 
+             icon = icons(iconUrl = ~icon_path, iconWidth = 70, iconHeight = 95, iconAnchorX = 22, iconAnchorY = 94),  
+             label = ~place, labelOptions = labelOptions(noHide = T, textOnly = T, direction = "bottom",
+                                style = list("color" = "blue", "font-family" = "微软雅黑",
+                                  "font-style" = "bold", "box-shadow" = "3px 3px rgba(0,0,0,0.25)",
+                                  "font-size" = "19px", "border-color" = "rgba(0,0,0,0.5)"))) %>%
+  addControl(div(HTML('<font face="微软雅黑" color=blue size=6>2019</font>')), position = "bottomleft")
+
+### 2020
+leaflet(df[df$year == 2020, ]) %>%
+  addTiles() %>%
+  setView(lng = 114.2, lat = 22.8, zoom = 8) %>%
+  addMarkers(~long, ~lat, 
+             icon = icons(iconUrl = ~icon_path, iconWidth = 70, iconHeight = 95, iconAnchorX = 22, iconAnchorY = 94),  
+             label = ~place, labelOptions = labelOptions(noHide = T, textOnly = T, direction = "bottom",
+                                style = list("color" = "blue", "font-family" = "微软雅黑",
+                                  "font-style" = "bold", "box-shadow" = "3px 3px rgba(0,0,0,0.25)",
+                                  "font-size" = "19px", "border-color" = "rgba(0,0,0,0.5)"))) %>%
+  addControl(div(HTML('<font face="微软雅黑" color=blue size=6>2020</font>')), position = "bottomleft")
+
+### 2021
+leaflet(df[df$year == 2021, ]) %>%
+  addTiles() %>%
+  setView(lng = 114.2, lat = 22.8, zoom = 8) %>%
+  addMarkers(~long, ~lat, 
+             icon = icons(iconUrl = ~icon_path, iconWidth = 70, iconHeight = 95, iconAnchorX = 22, iconAnchorY = 94),  
+             label = ~place, labelOptions = labelOptions(noHide = T, textOnly = T, direction = "bottom",
+                                style = list("color" = "blue", "font-family" = "微软雅黑",
+                                  "font-style" = "bold", "box-shadow" = "3px 3px rgba(0,0,0,0.25)",
+                                  "font-size" = "19px", "border-color" = "rgba(0,0,0,0.5)"))) %>%
+  addControl(div(HTML('<font face="微软雅黑" color=blue size=6>2021</font>')), position = "bottomleft")
+
+#### 2022
+leaflet(df[df$year == 2022, ]) %>% 
+  addTiles() %>%
+  setView(lng = 113.65, lat = 34.76, zoom = 3) %>%
+  addMarkers(~long, ~lat, 
+             icon = icons(iconUrl = ~icon_path, iconWidth = 70, iconHeight = 95, iconAnchorX = 22, iconAnchorY = 94), 
+             label = ~place, labelOptions = labelOptions(noHide = T, textOnly = T, direction = "bottom",
+                                style = list("color" = "blue", "font-family" = "微软雅黑",
+                                  "font-style" = "bold", "box-shadow" = "3px 3px rgba(0,0,0,0.25)",
+                                  "font-size" = "12px", "border-color" = "rgba(0,0,0,0.5)"))) %>%
+  addControl(div(HTML('<font face="微软雅黑" color=red size=6>2022</font>')), position = "bottomleft")
+```
+
+
+```{r make_animation, echo=FALSE, eval=TRUE, animation.hook='gifski', fig.height=20, fig.width=20}
+
+for (i in 1:18) {
+  png_dir <- './index_files/figure-html/'
+  png_file <- list.files(path = png_dir, pattern = '.png')
+  
+  if(length(png_file) != 0) {
+    sorted_png_file <- str_sort(png_file, numeric = TRUE)
+    imgpng <- readPNG(paste0(png_dir, sorted_png_file[i]))
+    r <- nrow(imgpng)/ncol(imgpng) 
+    plot(c(0,1), c(0,r), type = "n", xlab = "", ylab = "", asp= 1, xaxt = "n", yaxt = "n", axes = FALSE)
+    rasterImage(imgpng, xleft = 0, ybottom = 0, xright = 1, ytop = r)
+  } else {
+    print('warning: no png file exist.')
+  }
+
+}
+```
+
+

@@ -1,0 +1,50 @@
+---
+title: A small tip about R --- Transform the variable
+author: ''
+date: '2016-01-16'
+slug: a-small-tip-about-r-transform-the-variable
+categories:
+  - R
+tags:
+  - tips
+---
+
+For example:
+
+```{r}
+temp <- data.frame(char = c("1", "2", "2", "2", "3", "3", "4", "4", "5"))
+```
+
+I want to have a variable to order my character between different numbers, Confusing? 
+
+Like this:  1 1 2 3 1 2 1 2 1
+
+How can we create the variable like that?
+
+Just two steps:
+
++ First of all, compute how many every same char?
+
+```{r}
+library(plyr)
+
+temp2 <- ddply(temp, "char", nrow)
+
+temp2 
+```
+
++ Second, generate sequence.
+
+```{r}
+temp$new_variable <- unlist(lapply(temp2$V1, function(x) seq(length.out = x)))
+
+temp 
+```
+
+Why I do this?
+
+Just for plot by ggplot2.
+
+Welcome your advice and suggestion!
+
+Just record, this article was posted at linkedin, and have 23 views to November 2021.

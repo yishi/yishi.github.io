@@ -1,0 +1,513 @@
+---
+title: booklist
+author: ''
+date: '2021-12-13'
+slug: booklist
+categories: []
+tags:
+  - life
+---
+
+```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(lubridate)
+library(jiebaR)
+```
+
+```{r raw_data, include=FALSE}
+
+df <- read.csv('./data/book_list.csv')
+
+df_clean <- df %>% 
+  mutate(date = my(time)) %>% # for fill function work
+  fill(date) %>% # fill blank
+  select(-time) 
+
+# computer every month has how many books
+temp_n <- df_clean %>% 
+  group_by(date) %>% 
+  summarise(count = n()) 
+
+# get seq from 1 to the sum of books in one month
+temp_y <- unlist(lapply(temp_n$count, function(x) {
+  seq(from = 1, length.out = x)
+}))
+
+# create col y axis
+# add some random to y axis
+df_g <- df_clean %>% 
+  mutate(index = temp_y, 
+         index_random = index + rnorm(nrow(df), mean = 0, sd = 0.3)) 
+
+# add line feed (line break \n) to book name
+df_g$new_book <- unlist(lapply(df_g$book, function(x) {
+  
+  # length of character above 20, is long, need line break
+  if(str_length(x) > 10) {
+    # if English name, will split by ' '
+    # if Chinese name, will split to two character one word or other
+    temp <- unlist(str_split(x, pattern = boundary("word")))
+    # check if only one word
+    if(length(temp) > 1) {
+      # get a half of name position
+    i <- round(length(temp) / 2)
+    paste(paste(temp[1:i], collapse = ' '), '\n', paste(temp[(i+1):length(temp)], collapse = ' '), sep = ' ')
+    }else {
+      x
+    }
+    
+  }else {
+    x
+  }
+  
+}))
+
+```
+
+```{r blog_data, include=FALSE}
+file_name <- list.files(path = "../")
+
+tb <- tibble(date = ymd(str_sub(file_name, 1, 10)), 
+             name = str_replace_all(string = str_sub(file_name, 1), pattern = '-', replacement = ' '))
+
+# computer every month has how many books
+temp_n_blog <- tb %>% 
+  group_by(year(date)) %>% 
+  summarise(count = n()) 
+
+# get seq from 1 to the sum of books in one month
+temp_y_blog <- unlist(lapply(temp_n_blog$count, function(x) {
+  seq(from = 1, length.out = x)
+}))
+
+tb_c <- tb %>% 
+  mutate(index = temp_y_blog)
+
+# add line feed (line break \n) to book name
+tb_c$new_name <- unlist(lapply(tb_c$name, function(x) {
+  
+  # length of character above 20, is long, need line break
+  if(str_length(x) > 20) {
+    # if English name, will split by ' '
+    # if Chinese name, will split to two character one word or other
+    temp <- unlist(str_split(x, pattern = boundary("word")))
+    # check if only one word
+    if(length(temp) > 1) {
+      # get a half of name position
+    i <- round(length(temp) / 2)
+    paste(paste(temp[1:i], collapse = ' '), '\n', paste(temp[(i+1):length(temp)], collapse = ' '), sep = ' ')
+    }else {
+      x
+    }
+    
+  }else {
+    x
+  }
+  
+}))
+
+tb_c$short_name <- c(rep(x = c(''), length.out = 31), 
+                     c("work cloud", "weight 4 tdm", "tip1", "tip2", "tip3", "text cluster", 
+                       "classification model i", "classification model ii", "classification model iii", 
+                       "regression model i", "regression model ii", "recharts包安装问题", "安装python spark",
+                       "visualization i", "某市各区地图", "网页上抓天气数据", "visualization ii", "pyspark打开",
+                       "big data i", "visualization iii", "data analysis i", "data analysis ii", 
+                       "data analysis iii", "data analysis iV", "data analysis v", "data analysis vi", 
+                       "data in action 1", "data in action 2", "data in action 3", "data science in python", 
+                       "data in action 4", "data in action 5", "word cloud shiny", "r book recommendation", 
+                       "data visualization gallery", "data analysis shiny", "deep learning 1-4", "keras安装问题",
+                       "deep learning 5-6", "转载lasso", "text mining 1"), 
+                     c("text mining 2", "text mining 3", "computer vision 1-2", "tips1 about encode", 
+                       "deep learning 7", "python tips 2", "deep learning 8-10", "shiny的分级菜单", "kaggle 1-2",
+                       "kaggle有感1", "kaggle有感2", "kaggle有感3", "交互词云", "kaggle有感4", "data-table包",
+                       "visualization iv", "dplyr包", "r4ds book", "map replace apply"), 
+                     rep(x = c(''), length.out = nrow(tb_c) - 31 - 60))
+```
+
+
+
+<div align='center' ><font size='60'>2012</font></div>
+```{r, echo=FALSE, screenshot.force= TRUE}
+
+data.frame('word' = segment(df_g$book[df_g$date < ymd('2013-1-1')], worker())) %>% 
+  group_by(word) %>% 
+  summarise(n = n()) %>% 
+  arrange(desc(n)) %>% 
+  wordcloud2::wordcloud2() 
+
+```
+
+<div align='center' ><font size='60'>2013</font></div>
+```{r, echo=FALSE, screenshot.force= TRUE}
+data.frame('word' = segment(df_g$book[(df_g$date > ymd('2012-12-30')) & (df_g$date < ymd('2014-1-1'))], worker())) %>% 
+  group_by(word) %>% 
+  summarise(n = n()) %>% 
+  arrange(desc(n)) %>% 
+  wordcloud2::wordcloud2() 
+```
+
+
+<div align='center' ><font size='60'>2014</font></div>
+```{r, echo=FALSE, screenshot.force= TRUE}
+data.frame('word' = segment(df_g$book[(df_g$date > ymd('2013-12-30')) & (df_g$date < ymd('2015-1-1'))], worker())) %>% 
+  group_by(word) %>% 
+  summarise(n = n()) %>% 
+  arrange(desc(n)) %>% 
+  wordcloud2::wordcloud2() 
+```
+
+
+<div align='center' ><font size='60'>2015</font></div>
+```{r, echo=FALSE, screenshot.force= TRUE}
+data.frame('word' = segment(df_g$book[(df_g$date > ymd('2014-12-30')) & (df_g$date < ymd('2016-1-1'))], worker())) %>% 
+  group_by(word) %>% 
+  summarise(n = n()) %>% 
+  arrange(desc(n)) %>% 
+  wordcloud2::wordcloud2() 
+```
+
+
+<div align='center' ><font size='60'>2016</font></div>
+```{r, echo=FALSE, screenshot.force= TRUE}
+data.frame('word' = segment(df_g$book[(df_g$date > ymd('2015-12-30')) & (df_g$date < ymd('2017-1-1'))], worker())) %>% 
+  group_by(word) %>% 
+  summarise(n = n()) %>% 
+  arrange(desc(n)) %>% 
+  wordcloud2::wordcloud2() 
+```
+
+
+<div align='center' ><font size='60'>2017</font></div>
+```{r, echo=FALSE, screenshot.force= TRUE}
+data.frame('word' = segment(df_g$book[(df_g$date > ymd('2016-12-30')) & (df_g$date < ymd('2018-1-1'))], worker())) %>% 
+  group_by(word) %>% 
+  summarise(n = n()) %>% 
+  arrange(desc(n)) %>% 
+  wordcloud2::wordcloud2() 
+```
+
+
+<div align='center' ><font size='60'>2018</font></div>
+```{r, echo=FALSE, screenshot.force= TRUE}
+data.frame('word' = segment(df_g$book[(df_g$date > ymd('2017-12-30')) & (df_g$date < ymd('2019-1-1'))], worker())) %>% 
+  group_by(word) %>% 
+  summarise(n = n()) %>% 
+  arrange(desc(n)) %>% 
+  wordcloud2::wordcloud2() 
+```
+
+
+<div align='center' ><font size='60'>2019</font></div>
+```{r, echo=FALSE, screenshot.force= TRUE}
+data.frame('word' = segment(df_g$book[(df_g$date > ymd('2018-12-30')) & (df_g$date < ymd('2020-1-1'))], worker())) %>% 
+  group_by(word) %>% 
+  summarise(n = n()) %>% 
+  arrange(desc(n)) %>% 
+  wordcloud2::wordcloud2() 
+```
+
+
+<div align='center' ><font size='60'>2020</font></div>
+```{r, echo=FALSE, screenshot.force= TRUE}
+data.frame('word' = segment(df_g$book[(df_g$date > ymd('2019-12-30')) & (df_g$date < ymd('2021-1-1'))], worker())) %>% 
+  group_by(word) %>% 
+  summarise(n = n()) %>% 
+  arrange(desc(n)) %>% 
+  wordcloud2::wordcloud2() 
+```
+
+
+<div align='center' ><font size='60'>2021</font></div>
+```{r, echo=FALSE, screenshot.force= TRUE}
+data.frame('word' = segment(df_g$book[(df_g$date > ymd('2020-12-30')) & (df_g$date < ymd('2022-1-1'))], worker())) %>% 
+  group_by(word) %>% 
+  summarise(n = n()) %>% 
+  arrange(desc(n)) %>% 
+  wordcloud2::wordcloud2() 
+```
+
+
+```{r make_gplot, echo=FALSE, include=FALSE}
+# animation.hook='gifski', interval=5
+
+### 2012
+df_g %>%  ### need renew
+  filter(date < ymd('2013-1-1')) %>%   ### need renew
+  ggplot(aes(x = date, y = index, label = new_book, color = factor(date))) +
+  geom_text(size = 3, fontface = "bold") +
+  ylab('') +
+  xlab('') +
+  ggtitle('2012 books') +  ### need renew
+  theme(plot.title = element_text(hjust = 0.5, size = rel(2), face = "bold", color = 'darkgreen')) +
+  theme(axis.text.x = element_text(size = rel(1.3), face = "bold")) +
+  guides(color = 'none') +
+  scale_x_date(date_labels = "%Y.%m", limits = c(ymd('2012-6-15'), '2012-12-15'), date_breaks = "1 month") ### need renew
+
+
+### 2013
+df_g %>%      ### need renew
+  filter((date < ymd('2014-1-1')) & (date > ymd('2012-12-30'))) %>%     ### need renew
+  ggplot(aes(x = date, y = index, label = new_book, color = factor(date))) +
+  geom_text(size = 3, fontface = "bold") +
+  ylab('') +
+  xlab('') +
+  ggtitle('2013 books') +  ### need renew
+  theme(plot.title = element_text(hjust = 0.5, size = rel(2), face = "bold", color = 'darkgreen')) +
+  theme(axis.text.x = element_text(size = rel(1.3), face = "bold")) +
+  guides(color = 'none') +
+  scale_x_date(date_labels = "%m", limits = c(ymd('2012-12-18'), '2013-12-13'), date_breaks = "1 month") + ### need renew
+  scale_color_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#D55E00", "#0072B2", "#CC79A7", "#E69F00", "#56B4E9", "#009E73", "#D55E00", "#0072B2", "#CC79A7"))
+
+
+
+### 2013 blogs
+tb_c %>% 
+  filter(date < ymd('2014-1-1')) %>% 
+  ggplot(aes(x = date, y = index, label = new_name, color = factor(index))) +
+    geom_text(size = 3, fontface = "bold") +
+    geom_segment(aes(x = date, xend = date, y = 0.1, yend = index -0.5, colour = factor(index)), arrow = arrow(), linetype = 'dashed', size = .8) +
+    xlab('') + ylab('') + ylim(0, 6.5) +
+    ggtitle('2013 blog articles') +
+    theme(plot.title = element_text(hjust = 0.5, size = rel(2), face = "bold", color = 'orange')) +
+    theme(axis.text.x = element_text(size = rel(1.3), face = "bold")) +
+    guides(color = 'none') +
+    scale_x_date(date_labels = "%m", limits = c(ymd('2013-01-01'), '2013-12-14'), date_breaks = "1 month")
+
+### 2014
+df_g %>%      ### need renew
+  filter((date > ymd('2013-12-30')) & (date < ymd('2015-1-1'))) %>%     ### need renew
+  ggplot(aes(x = date, y = index, label = new_book, color = factor(date))) +
+  geom_text(size = 3, fontface = "bold") +
+  ylab('') +
+  xlab('') +
+  ggtitle('2014 books') +  ### need renew
+  theme(plot.title = element_text(hjust = 0.5, size = rel(2), face = "bold", color = 'darkgreen')) +
+  theme(axis.text.x = element_text(size = rel(1.3), face = "bold")) +
+  guides(color = 'none') +
+  scale_x_date(date_labels = "%m", limits = c(ymd('2013-12-15'), '2014-12-15'), date_breaks = "1 month") +  ### need renew
+  scale_color_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#D55E00", "#0072B2", "#CC79A7", "#E69F00", "#56B4E9", "#009E73", "#D55E00", "#0072B2", "#CC79A7"))
+
+
+
+### 2014 blogs
+tb_c %>% 
+  filter((date > ymd('2013-12-31')) & (date < ymd('2015-1-1'))) %>% 
+  ggplot(aes(x = date, y = index, label = new_name, color = factor(index))) +
+    geom_text(size = 3, fontface = "bold") +
+    geom_segment(aes(x = date, xend = date, y = 0.1, yend = index -0.5, colour = factor(index)), arrow = arrow(), linetype = 'dashed', size = .8) +
+    xlab('') + ylab('') +
+    ylim(0, 13) +
+    ggtitle('2014 blog articles') +
+    theme(plot.title = element_text(hjust = 0.5, size = rel(2), face = "bold", color = 'orange')) +
+    theme(axis.text.x = element_text(size = rel(1.3), face = "bold")) +
+    guides(color = 'none') +
+    scale_x_date(date_labels = "%m", limits = c(ymd('2014-01-01'), '2014-12-31'), date_breaks = "1 month")
+
+### 2015
+df_g %>%      ### need renew
+  filter((date > ymd('2014-12-30')) & (date < ymd('2016-1-1'))) %>%     ### need renew
+  ggplot(aes(x = date, y = index, label = new_book, color = factor(date))) +
+  geom_text(size = 3, fontface = "bold") +
+  ylab('') +
+  xlab('') +
+  ggtitle('2015 books') +  ### need renew
+  theme(plot.title = element_text(hjust = 0.5, size = rel(2), face = "bold", color = 'darkgreen')) +
+  theme(axis.text.x = element_text(size = rel(1.3), face = "bold")) +
+  guides(color = 'none') +
+  scale_x_date(date_labels = "%m", limits = c(ymd('2014-12-15'), '2015-12-15'), date_breaks = "1 month") + ### need renew
+  scale_color_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#D55E00", "#0072B2", "#CC79A7", "#E69F00", "#56B4E9", "#009E73", "#D55E00", "#0072B2", "#CC79A7"))
+
+
+
+### 2015 blogs
+tb_c %>% 
+  filter((date > ymd('2014-12-31')) & (date < ymd('2016-1-1'))) %>% 
+  ggplot(aes(x = date, y = index, label = new_name, color = factor(index))) +
+    geom_text(size = 3, fontface = "bold") +
+    geom_segment(aes(x = date, xend = date, y = 0.1, yend = index -0.5, colour = factor(index)), arrow = arrow(), linetype = 'dashed', size = .8) +
+    xlab('') + ylab('') +
+    ggtitle('2015 blog articles') +
+    theme(plot.title = element_text(hjust = 0.5, size = rel(2), face = "bold", color = 'orange')) +
+    theme(axis.text.x = element_text(size = rel(1.3), face = "bold")) +
+    guides(color = 'none') +
+    scale_x_date(date_labels = "%m", limits = c(ymd('2015-01-01'), '2015-12-31'), date_breaks = "1 month")
+
+### 2016
+df_g %>%      ### need renew
+  filter((date > ymd('2015-12-30')) & (date < ymd('2017-1-1'))) %>%     ### need renew
+  ggplot(aes(x = date, y = index, label = new_book, color = factor(date))) +
+  geom_text(size = 3, fontface = "bold") +
+  ylab('') +
+  xlab('') +
+  ggtitle('2016 books') +  ### need renew
+  theme(plot.title = element_text(hjust = 0.5, size = rel(2), face = "bold", color = 'darkgreen')) +
+  theme(axis.text.x = element_text(size = rel(1.3), face = "bold")) +
+  guides(color = 'none') +
+  scale_x_date(date_labels = "%m", limits = c(ymd('2015-12-15'), '2016-12-15'), date_breaks = "1 month") + ### need renew
+  scale_color_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#D55E00", "#0072B2", "#CC79A7", "#E69F00", "#56B4E9", "#009E73", "#D55E00", "#0072B2", "#CC79A7"))
+
+
+
+### 2016 blogs
+tb_c %>% 
+  filter((date > ymd('2015-12-31')) & (date < ymd('2017-1-1'))) %>% 
+  ggplot(aes(x = date, y = index, label = short_name, color = factor(index))) +
+    geom_text(size = 3, fontface = "bold") +
+    geom_segment(aes(x = date, xend = date, y = 0.1, yend = index -0.5, colour = factor(index)), arrow = arrow(), linetype = 'dashed', size = .8) +
+    xlab('') + ylab('') +
+    ggtitle('2016 blog articles') +
+    theme(plot.title = element_text(hjust = 0.5, size = rel(2), face = "bold", color = 'orange')) +
+    theme(axis.text.x = element_text(size = rel(1.3), face = "bold")) +
+    guides(color = 'none') +
+    scale_x_date(date_labels = "%m", limits = c(ymd('2016-01-01'), '2016-12-31'), date_breaks = "1 month")
+
+### 2017
+df_g %>%      ### need renew
+  filter((date > ymd('2016-12-30')) & (date < ymd('2018-1-1'))) %>%     ### need renew
+  ggplot(aes(x = date, y = index, label = new_book, color = factor(date))) +
+  geom_text(size = 3, fontface = "bold") +
+  ylab('') +
+  xlab('') +
+  ggtitle('2017 books') +  ### need renew
+  theme(plot.title = element_text(hjust = 0.5, size = rel(2), face = "bold", color = 'darkgreen')) +
+  theme(axis.text.x = element_text(size = rel(1.3), face = "bold")) +
+  guides(color = 'none') +
+  scale_x_date(date_labels = "%m", limits = c(ymd('2016-12-15'), '2017-12-15'), date_breaks = "1 month") + ### need renew
+  scale_color_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#D55E00", "#0072B2", "#CC79A7", "#E69F00", "#56B4E9", "#009E73", "#D55E00", "#0072B2", "#CC79A7"))
+
+
+
+### 2017 blogs
+tb_c %>% 
+  filter((date > ymd('2016-12-31')) & (date < ymd('2018-1-1'))) %>% 
+  ggplot(aes(x = date, y = index, label = short_name, color = factor(index))) +
+    geom_text(size = 3, fontface = "bold") +
+    geom_segment(aes(x = date, xend = date, y = 0.1, yend = index -0.5, colour = factor(index)), arrow = arrow(), linetype = 'dashed', size = .8) +
+    xlab('') + ylab('') +
+    ggtitle('2017 blog articles') +
+    theme(plot.title = element_text(hjust = 0.5, size = rel(2), face = "bold", color = 'orange')) +
+    theme(axis.text.x = element_text(size = rel(1.3), face = "bold")) +
+    guides(color = 'none') +
+    scale_x_date(date_labels = "%m", limits = c(ymd('2017-01-01'), '2017-12-31'), date_breaks = "1 month")
+
+### 2018
+df_g %>%      ### need renew
+  filter((date > ymd('2017-12-30')) & (date < ymd('2019-1-1'))) %>%     ### need renew
+  ggplot(aes(x = date, y = index, label = new_book, color = factor(date))) +
+  geom_text(size = 3, fontface = "bold") +
+  ylab('') +
+  xlab('') +
+  ggtitle('2018 books') +  ### need renew
+  theme(plot.title = element_text(hjust = 0.5, size = rel(2), face = "bold", color = 'darkgreen')) +
+  theme(axis.text.x = element_text(size = rel(1.3), face = "bold")) +
+  guides(color = 'none') +
+  scale_x_date(date_labels = "%m", limits = c(ymd('2017-12-15'), '2018-12-15'), date_breaks = "1 month") + ### need renew
+  scale_color_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#D55E00", "#0072B2", "#CC79A7", "#E69F00", "#56B4E9", "#009E73", "#D55E00", "#0072B2", "#CC79A7"))
+
+
+
+### 2018 blogs
+tb_c %>% 
+  filter((date > ymd('2017-12-31')) & (date < ymd('2019-1-1'))) %>% 
+  ggplot(aes(x = date, y = index, label = new_name, color = factor(index))) +
+    geom_text(size = 3, fontface = "bold") +
+    geom_segment(aes(x = date, xend = date, y = 0.1, yend = index -0.5, colour = factor(index)), arrow = arrow(), linetype = 'dashed', size = .8) +
+    xlab('') + ylab('') +
+    ggtitle('2018 blog articles') +
+    theme(plot.title = element_text(hjust = 0.5, size = rel(2), face = "bold", color = 'orange')) +
+    theme(axis.text.x = element_text(size = rel(1.3), face = "bold")) +
+    guides(color = 'none') +
+    scale_x_date(date_labels = "%m", limits = c(ymd('2018-01-01'), '2018-12-31'), date_breaks = "1 month")
+
+### 2019
+df_g %>%      ### need renew
+  filter((date > ymd('2018-12-30')) & (date < ymd('2020-1-1'))) %>%     ### need renew
+  ggplot(aes(x = date, y = index, label = new_book, color = factor(date))) +
+  geom_text(size = 3, fontface = "bold") +
+  ylab('') +
+  xlab('') +
+  ggtitle('2019 books') +  ### need renew
+  theme(plot.title = element_text(hjust = 0.5, size = rel(2), face = "bold", color = 'darkgreen')) +
+  theme(axis.text.x = element_text(size = rel(1.3), face = "bold")) +
+  guides(color = 'none') +
+  scale_x_date(date_labels = "%m", limits = c(ymd('2018-12-15'), '2019-12-15'), date_breaks = "1 month") + ### need renew
+  scale_color_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#D55E00", "#0072B2", "#CC79A7", "#E69F00", "#56B4E9", "#009E73", "#D55E00", "#0072B2", "#CC79A7"))
+
+
+
+### 2019 blogs
+tb_c %>% 
+  filter((date > ymd('2018-12-31')) & (date < ymd('2020-1-1'))) %>% 
+  ggplot(aes(x = date, y = index, label = new_name, color = factor(index))) +
+    geom_text(size = 3, fontface = "bold") +
+    geom_segment(aes(x = date, xend = date, y = 0.1, yend = index -0.5, colour = factor(index)), arrow = arrow(), linetype = 'dashed', size = .8) +
+    xlab('') + ylab('') +
+    ggtitle('2019 blog articles') +
+    theme(plot.title = element_text(hjust = 0.5, size = rel(2), face = "bold", color = 'orange')) +
+    theme(axis.text.x = element_text(size = rel(1.3), face = "bold")) +
+    guides(color = 'none') +
+    scale_x_date(date_labels = "%m", limits = c(ymd('2019-01-01'), '2019-12-31'), date_breaks = "1 month")
+
+### 2020
+df_g %>%      ### need renew
+  filter((date > ymd('2019-12-30')) & (date < ymd('2021-1-1'))) %>%     ### need renew
+  ggplot(aes(x = date, y = index, label = new_book, color = factor(date))) +
+  geom_text(size = 3, fontface = "bold") +
+  ylab('') +
+  xlab('') +
+  ylim(c(0.5, 5)) +
+  ggtitle('2020 books') +  ### need renew
+  theme(plot.title = element_text(hjust = 0.5, size = rel(2), face = "bold", color = 'darkgreen')) +
+  theme(axis.text.x = element_text(size = rel(1.3), face = "bold")) +
+  guides(color = 'none') +
+  scale_x_date(date_labels = "%m", limits = c(ymd('2019-12-15'), '2020-12-15'), date_breaks = "1 month") + ### need renew
+  scale_color_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#D55E00", "#0072B2", "#CC79A7", "#E69F00", "#56B4E9", "#009E73", "#D55E00", "#0072B2", "#CC79A7"))
+
+
+
+### 2020 blogs
+tb_c %>% 
+  filter((date > ymd('2019-12-31')) & (date < ymd('2021-1-1'))) %>% 
+  ggplot(aes(x = date, y = index, label = new_name, color = factor(index))) +
+    geom_text(size = 3, fontface = "bold") +
+    # geom_segment(aes(x = date, xend = date, y = 0.1, yend = index -0.5, colour = factor(index)), arrow = arrow(), linetype = 'dashed', size = .8) +
+    xlab('') + ylab('') +
+    ggtitle('2020 blog articles') +
+    theme(plot.title = element_text(hjust = 0.5, size = rel(2), face = "bold", color = 'orange')) +
+    theme(axis.text.x = element_text(size = rel(1.3), face = "bold")) +
+    guides(color = 'none') +
+    scale_x_date(date_labels = "%m", limits = c(ymd('2020-01-01'), '2020-12-31'), date_breaks = "1 month")
+
+### 2021
+df_g %>%      ### need renew
+  filter((date > ymd('2020-12-30')) & (date < ymd('2022-1-1'))) %>%     ### need renew
+  ggplot(aes(x = date, y = index, label = new_book, color = factor(date))) +
+  geom_text(size = 3, fontface = "bold") +
+  ylab('') +
+  xlab('') +
+  ggtitle('2021 books') +  ### need renew
+  theme(plot.title = element_text(hjust = 0.5, size = rel(2), face = "bold", color = 'darkgreen')) +
+  theme(axis.text.x = element_text(size = rel(1.3), face = "bold")) +
+  guides(color = 'none') +
+  scale_x_date(date_labels = "%m", limits = c(ymd('2020-12-15'), '2021-12-15'), date_breaks = "1 month") + ### need renew
+  scale_color_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#D55E00", "#0072B2", "#CC79A7", "#E69F00", "#56B4E9", "#009E73", "#D55E00", "#0072B2", "#CC79A7"))
+
+
+
+### 2021 blogs
+tb_c %>% 
+  filter((date > ymd('2020-12-31')) & (date < ymd('2022-1-1'))) %>% 
+  ggplot(aes(x = date, y = index, label = new_name, color = factor(index))) +
+    geom_text(size = 3, fontface = "bold") +
+    geom_segment(aes(x = date, xend = date, y = 0.1, yend = index -0.5, colour = factor(index)), arrow = arrow(), linetype = 'dashed', size = .8) +
+    xlab('') + ylab('') +
+    ggtitle('2021 blog articles') +
+    theme(plot.title = element_text(hjust = 0.5, size = rel(2), face = "bold", color = 'orange')) +
+    theme(axis.text.x = element_text(size = rel(1.3), face = "bold")) +
+    guides(color = 'none') +
+    scale_x_date(date_labels = "%m", limits = c(ymd('2021-01-01'), '2021-12-31'), date_breaks = "1 month")
+
+```
+
+
+
