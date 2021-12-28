@@ -10,6 +10,12 @@ tags:
   - gitalk
 ---
 
+****
+更新于2021年12月：
+
+Netlify由于某些原因，已经无法登陆，文章无法更新，目前已经使用Travis CI 去建立和部署网站。
+****
+
 本静态网站主要是使用R包blogdown+hugo+netlify+github搭建的，网站的评论功能使用gitalk。
 
 只需要熟悉R，注册有github账号，对自己有充分的信心，勇于**试错**即可。
